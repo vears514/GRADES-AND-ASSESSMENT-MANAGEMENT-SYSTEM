@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply box-border;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-neutral font-sans;
+}
+
+/* Utility classes */
+.container-main {
+  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-primary text-white font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.button-secondary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-surface text-neutral font-medium border border-border hover:bg-gray-100 transition-colors;
+}
+
+.button-danger {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-danger text-white font-medium hover:bg-red-600 transition-colors;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+}
+
+.card {
+  @apply bg-white border border-border rounded-lg shadow-md p-6;
+}
+
+.badge {
+  @apply inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply bg-warning bg-opacity-20 text-warning;
+}
+
+.badge-error {
+  @apply bg-danger bg-opacity-20 text-danger;
+}
+
+.badge-info {
+  @apply bg-primary bg-opacity-20 text-primary;
+}
+
+.table-cell {
+  @apply px-6 py-3 text-left text-sm;
+}
+
+.table-header {
+  @apply bg-surface border-b border-border font-semibold;
+}
+
+.table-row {
+  @apply border-b border-border hover:bg-surface transition-colors;
+}

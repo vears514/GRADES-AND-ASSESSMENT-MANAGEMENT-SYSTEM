@@ -1,10 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   title: 'GradeHub - Academic Grade Management System',
   description: 'GradeHub: Comprehensive platform for managing academic grades with verification, reporting, and student access',
-  viewport: 'width=device-width, initial-scale=1',
 }
 
 export default function RootLayout({

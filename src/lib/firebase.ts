@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
@@ -13,11 +13,29 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
+let app: any
+let auth: any
+let db: any
+let storage: any
+
+// Initialize Firebase only on client side
+if (typeof window !== 'undefined') {
+  try {
+    app = initializeApp(firebaseConfig)
+    auth = getAuth(app)
+    db = getFirestore(app)
+    storage = getStorage(app)
+
+    // Set persistence to LOCAL so users stay logged in across sessions
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.error('Error setting persistence:', error)
+    })
+  } catch (error: any) {
+    console.error('Firebase initialization error:', error)
+  }
+}
 
 // Initialize services
-export const auth = getAuth(app)
-export const db = getFirestore(app)
-export const storage = getStorage(app)
+export { auth, db, storage }
 
 export default app

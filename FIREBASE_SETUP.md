@@ -196,6 +196,76 @@ All Firebase credentials are stored in `.env.local`. This file should:
 - Check database security rules
 - Ensure collections exist with proper structure
 
+## Google Authentication Setup
+
+### 1. Firebase Console Configuration
+
+#### Step 1: Enable Google Sign-In
+1. Go to [Firebase Console](https://console.firebase.google.com/project/gradehub-beltran/authentication/providers)
+2. Navigate to **Authentication** → **Sign-in method**
+3. Click on **Google** provider
+4. Toggle **Enable** switch to ON
+5. Select the support email from the dropdown
+6. Click **Save**
+
+#### Step 2: Configure OAuth Consent Screen
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials/consent)
+2. Make sure the correct project is selected (gradehub-beltran)
+3. Click **Create Consent Screen**
+4. Select **External** for user type
+5. Fill in the required fields:
+   - **App name:** GradeHub
+   - **User support email:** your-email@example.com
+   - **Developer contact info:** your-email@example.com
+6. Add these scopes:
+   - `email`
+   - `profile`
+   - `openid`
+7. Add test users (your email address)
+8. Submit for review (or keep in development mode for testing)
+
+### 2. Implementation in Code
+
+The Google authentication is now integrated into the following files:
+
+**authService.ts:**
+- `signInWithGoogle()` - Handles Google sign-in/sign-up
+- Automatically creates user profile in Firestore for new Google users
+- Stores authentication method (`email` or `google`)
+
+**src/app/login/page.tsx:**
+- "Continue with Google" button
+- Redirects to dashboard on success
+
+**src/app/register/page.tsx:**
+- "Sign up with Google" button
+- Users can skip email/password registration
+
+### 3. Testing Google Authentication
+
+1. Start the development server: `npm run dev`
+2. Navigate to http://localhost:3000/login or /register
+3. Click "Continue with Google" or "Sign up with Google"
+4. Sign in with your Google account
+5. You'll be redirected to the dashboard
+
+### 4. Firestore User Document Structure
+
+```json
+{
+  "uid": "google-user-id",
+  "email": "user@gmail.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "photoURL": "https://...",
+  "role": "student",
+  "department": "",
+  "authMethod": "google",
+  "createdAt": "2024-01-04T...",
+  "updatedAt": "2024-01-04T..."
+}
+```
+
 ## Next Steps
 
 1. ✅ Firebase configured

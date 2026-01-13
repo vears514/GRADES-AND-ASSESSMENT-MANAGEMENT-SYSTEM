@@ -1,9 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
+import { authService } from '@/services/authService'
+import { UserRole } from '@/types'
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -66,14 +70,43 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      // TODO: Integrate Firebase authentication
-      console.log('Register attempt:', formData)
+      await authService.register(formData.email, formData.password, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        role: formData.role as UserRole,
+        department: formData.department,
+      })
+      
       setSuccess('Account created successfully! Redirecting to login...')
       setTimeout(() => {
-        alert('Registration functionality to be integrated with Firebase')
+        router.push('/login')
       }, 1500)
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignUp = async () => {
+    setError('')
+    setLoading(true)
+
+    try {
+      const { user, isNewUser } = await authService.signInWithGoogle()
+      setSuccess('Google sign-up successful! Redirecting...')
+      
+      setTimeout(() => {
+        // Redirect to dashboard for new users to complete their profile if needed
+        router.push('/dashboard')
+      }, 1500)
+    } catch (err: any) {
+      if (err.message === 'Sign-in was cancelled') {
+        setError('Sign-up was cancelled. Please try again.')
+      } else {
+        setError(err.message || 'Google sign-up failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -121,6 +154,7 @@ export default function RegisterPage() {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
+                  disabled={loading}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="John"
                 />
@@ -133,6 +167,7 @@ export default function RegisterPage() {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
+                  disabled={loading}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Doe"
                 />
@@ -147,6 +182,7 @@ export default function RegisterPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={loading}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="your@email.com"
               />
@@ -158,6 +194,7 @@ export default function RegisterPage() {
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
+                disabled={loading}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               >
                 <option value="student">👨‍🎓 Student</option>
@@ -177,6 +214,7 @@ export default function RegisterPage() {
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
+                disabled={loading}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="e.g., Computer Science"
               />
@@ -191,6 +229,7 @@ export default function RegisterPage() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
+                  disabled={loading}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="••••••••"
                   minLength={8}
@@ -233,6 +272,7 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  disabled={loading}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="••••••••"
                   minLength={8}
@@ -278,11 +318,9 @@ export default function RegisterPage() {
           {/* Google Sign Up */}
           <button
             type="button"
-            className="w-full mt-6 py-2.5 px-4 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-            onClick={() => {
-              alert('Google authentication to be integrated with Firebase')
-              console.log('Google Sign-Up clicked')
-            }}
+            disabled={loading}
+            className="w-full mt-6 py-2.5 px-4 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handleGoogleSignUp}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

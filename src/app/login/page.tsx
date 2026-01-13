@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
+import { authService } from '@/services/authService'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -25,15 +28,37 @@ export default function LoginPage() {
     }
 
     try {
-      // TODO: Integrate Firebase authentication
-      console.log('Login attempt:', { email, password })
+      await authService.login(email, password)
       setSuccess('Login successful! Redirecting...')
-      // Placeholder for auth logic
       setTimeout(() => {
-        alert('Login functionality to be integrated with Firebase')
-      }, 1000)
+        router.push('/dashboard')
+      }, 1500)
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setError('')
+    setLoading(true)
+
+    try {
+      const { user, isNewUser } = await authService.signInWithGoogle()
+      setSuccess('Google sign-in successful! Redirecting...')
+      
+      // If it's a new user, you might want to redirect to complete profile
+      // Otherwise go to dashboard
+      setTimeout(() => {
+        router.push(isNewUser ? '/dashboard/profile-setup' : '/dashboard')
+      }, 1500)
+    } catch (err: any) {
+      if (err.message === 'Sign-in was cancelled') {
+        setError('Sign-in was cancelled. Please try again.')
+      } else {
+        setError(err.message || 'Google sign-in failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -81,6 +106,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="your@email.com"
+                disabled={loading}
               />
             </div>
 
@@ -94,6 +120,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="••••••••"
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -107,7 +134,7 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-300" disabled={loading} />
                 <span className="text-gray-700">Remember me</span>
               </label>
               <Link href="#" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
@@ -141,11 +168,9 @@ export default function LoginPage() {
           {/* Google Sign In */}
           <button
             type="button"
-            className="w-full mt-6 py-2.5 px-4 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-            onClick={() => {
-              alert('Google authentication to be integrated with Firebase')
-              console.log('Google Sign-In clicked')
-            }}
+            disabled={loading}
+            className="w-full mt-6 py-2.5 px-4 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handleGoogleSignIn}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

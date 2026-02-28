@@ -45,13 +45,11 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const { user, isNewUser } = await authService.signInWithGoogle()
+      await authService.signInWithGoogle()
       setSuccess('Google sign-in successful! Redirecting...')
-      
-      // If it's a new user, you might want to redirect to complete profile
-      // Otherwise go to dashboard
+
       setTimeout(() => {
-        router.push(isNewUser ? '/dashboard/profile-setup' : '/dashboard')
+        router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
       if (err.message === 'Sign-in was cancelled') {

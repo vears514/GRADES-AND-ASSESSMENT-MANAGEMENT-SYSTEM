@@ -1,13 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { authService } from '@/services/authService'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const router = useRouter()
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    const unsubscribe = authService.onAuthStateChanged((user) => {
+      if (!user) {
+        router.replace('/login')
+        return
+      }
+
+      setIsCheckingAuth(false)
+    })
+
+    return unsubscribe
+  }, [router])
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="card text-center">
+          <p className="font-semibold">Checking your session...</p>
+          <p className="text-sm text-gray-600 mt-2">Please wait while we load your dashboard.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-surface">
@@ -50,8 +79,11 @@ export default function DashboardLayout({
             onToggle={() => setExpandedMenu(expandedMenu === 'student' ? null : 'student')}
             items={[
               { href: '/dashboard/student/grades', label: 'My Grades', icon: '⭐' },
+              { href: '/dashboard/student/semestral-grade', label: 'Semestral Grade', icon: '📘' },
             ]}
           />
+
+          <NavLink href="/dashboard/users" label="Users" icon="👥" />
 
           <div className="pt-6 border-t mt-6">
             <NavLink href="/dashboard/profile" label="Profile" icon="👤" />
@@ -83,13 +115,13 @@ export default function DashboardLayout({
 
 function NavLink({ href, label, icon }: { href: string; label: string; icon: string }) {
   return (
-    <a
+    <Link
       href={href}
       className="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 hover:bg-surface transition-colors"
     >
       <span className="text-lg">{icon}</span>
       <span className="font-medium text-sm">{label}</span>
-    </a>
+    </Link>
   )
 }
 
@@ -120,14 +152,14 @@ function NavMenu({
       {expanded && (
         <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-2">
           {items.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className="flex items-center gap-3 px-4 py-2 rounded-md text-gray-600 hover:bg-surface text-sm transition-colors"
             >
               <span>{item.icon}</span>
               <span>{item.label}</span>
-            </a>
+            </Link>
           ))}
         </div>
       )}

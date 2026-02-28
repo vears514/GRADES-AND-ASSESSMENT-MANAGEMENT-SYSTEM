@@ -1,0 +1,352 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to determine user role
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user is faculty
+    function isFaculty() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'faculty';
+    }
+    
+    // Helper function to check if user is registrar
+    function isRegistrar() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'registrar';
+    }
+    
+    // Helper function to check if user is student
+    function isStudent() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+    
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Helper function to get user document
+    function getUser() {
+      return request.auth != null ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data : null;
+    }
+    
+    // Helper function to check if faculty teaches course
+    function teachesCourse(courseId) {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/courses/$(courseId)) &&
+        get(/databases/$(database)/documents/courses/$(courseId)).data.facultyId == request.auth.uid;
+    }
+    
+    // Root level access - deny by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // ============================================================================
+    // USERS COLLECTION
+    // ============================================================================
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isOwner(userId);
+      
+      // Admin can read all user profiles
+      allow read: if isAdmin();
+      
+      // Registrar can read all user profiles (for verification)
+      allow read: if isRegistrar();
+      
+      // Users can update their own profile (limited fields)
+      allow update: if isOwner(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.email == resource.data.email &&
+        request.resource.data.createdAt == resource.data.createdAt;
+      
+      // Allow registration - authenticated users can create their own profile
+      allow create: if request.auth != null && 
+        request.auth.uid == userId &&
+        request.resource.data.email is string &&
+        request.resource.data.role in ['student', 'faculty'];
+      
+      // Admin can create, update, and delete users
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+      
+      // Subcollection: user sessions
+      match /sessions/{sessionId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+        allow read: if isAdmin();
+      }
+    }
+    
+    // ============================================================================
+    // COURSES COLLECTION
+    // ============================================================================
+    match /courses/{courseId} {
+      // Everyone can read published courses
+      allow read: if resource.data.isPublished == true;
+      
+      // Faculty can read their own courses
+      allow read: if isFaculty() && resource.data.facultyId == request.auth.uid;
+      
+      // Admin and registrar can read all courses
+      allow read: if isAdmin() || isRegistrar();
+      
+      // Faculty can create courses
+      allow create: if isFaculty() && request.resource.data.facultyId == request.auth.uid;
+      
+      // Faculty can update their own courses
+      allow update: if isFaculty() && resource.data.facultyId == request.auth.uid &&
+        request.resource.data.facultyId == resource.data.facultyId;
+      
+      // Admin can update any course
+      allow update: if isAdmin();
+      
+      // Admin can delete courses
+      allow delete: if isAdmin();
+      
+      // Subcollection: course settings
+      match /settings/{settingId} {
+        allow read: if resource.data.courseId == courseId &&
+          (isFaculty() && courseId in get(/databases/$(database)/documents/courses/$(courseId)).data
+          || isAdmin() || isRegistrar());
+        allow write: if isFaculty() && resource.data.courseId == courseId &&
+          courseId in get(/databases/$(database)/documents/courses/$(courseId)).data;
+      }
+    }
+    
+    // ============================================================================
+    // ENROLLMENTS COLLECTION
+    // ============================================================================
+    match /enrollments/{enrollmentId} {
+      // Students can read their own enrollments
+      allow read: if isStudent() && resource.data.studentId == request.auth.uid;
+      
+      // Faculty can read enrollments for their courses
+      allow read: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid;
+      
+      // Admin and registrar can read all enrollments
+      allow read: if isAdmin() || isRegistrar();
+      
+      // Admin and registrar can create enrollments
+      allow create: if (isAdmin() || isRegistrar());
+      
+      // Admin and registrar can update enrollments
+      allow update: if (isAdmin() || isRegistrar());
+      
+      // Admin can delete enrollments
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // GRADES COLLECTION
+    // ============================================================================
+    match /grades/{gradeId} {
+      // Students can read their own grades
+      allow read: if isStudent() && resource.data.studentId == request.auth.uid;
+      
+      // Faculty can read and write grades for their courses
+      allow read: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid;
+      
+      allow create: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.facultyId == request.auth.uid;
+      
+      allow update: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid &&
+        request.resource.data.courseId == resource.data.courseId &&
+        request.resource.data.studentId == resource.data.studentId;
+      
+      // Admin and registrar can read all grades
+      allow read: if isAdmin() || isRegistrar();
+      
+      // Admin and registrar can update grades
+      allow update: if isAdmin() || isRegistrar();
+      
+      // Admin can delete grades
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // GRADE VERIFICATIONS COLLECTION
+    // ============================================================================
+    match /gradeVerifications/{verificationId} {
+      // Students can read verification status for their course
+      allow read: if isStudent() && resource.data.studentId == request.auth.uid;
+      
+      // Faculty can read verification status for their courses
+      allow read: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid;
+      
+      // Registrar can create verification records
+      allow create: if isRegistrar();
+      
+      // Registrar can update verification status
+      allow update: if isRegistrar();
+      
+      // Admin can read and update
+      allow read: if isAdmin();
+      allow update: if isAdmin();
+    }
+    
+    // ============================================================================
+    // GRADE CORRECTIONS COLLECTION
+    // ============================================================================
+    match /gradeCorrections/{correctionId} {
+      // Students can read their own correction appeals
+      allow read: if isStudent() && resource.data.filedBy == request.auth.uid;
+      
+      // Faculty can read correction appeals for their courses
+      allow read: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid;
+      
+      // Students can create correction appeals
+      allow create: if isStudent() && request.resource.data.filedBy == request.auth.uid;
+      
+      // Students can update their pending appeals
+      allow update: if isStudent() &&
+        resource.data.filedBy == request.auth.uid &&
+        (resource.data.status == 'pending' || resource.data.status == 'draft');
+      
+      // Faculty can respond to appeals
+      allow update: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid &&
+        resource.data.status == 'pending' &&
+        (request.resource.data.status == 'approved' || request.resource.data.status == 'rejected');
+      
+      // Admin and registrar can read all
+      allow read: if isAdmin() || isRegistrar();
+      allow update: if isAdmin() || isRegistrar();
+    }
+    
+    // ============================================================================
+    // BULK UPLOADS COLLECTION
+    // ============================================================================
+    match /bulkUploads/{uploadId} {
+      // Faculty can read their own uploads
+      allow read: if isFaculty() && resource.data.uploadedBy == request.auth.uid;
+      
+      // Faculty can create bulk uploads
+      allow create: if isFaculty() &&
+        request.resource.data.uploadedBy == request.auth.uid;
+      
+      // Faculty can update their own uploads (before processing)
+      allow update: if isFaculty() &&
+        resource.data.uploadedBy == request.auth.uid &&
+        (resource.data.status == 'draft' || resource.data.status == 'failed');
+      
+      // Admin and registrar can read all
+      allow read: if isAdmin() || isRegistrar();
+      allow update: if isAdmin() || isRegistrar();
+      
+      // Subcollection: upload items
+      match /items/{itemId} {
+        allow read: if request.auth.uid != null &&
+          (isFaculty() && get(/databases/$(database)/documents/bulkUploads/$(uploadId)).data.uploadedBy == request.auth.uid
+           || isAdmin() || isRegistrar());
+        allow write: if isAdmin() || isRegistrar();
+      }
+    }
+    
+    // ============================================================================
+    // NOTIFICATIONS COLLECTION (User-specific)
+    // ============================================================================
+    match /users/{userId}/notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isOwner(userId);
+      
+      // System can create notifications for users
+      allow create: if request.auth.uid == null || isAdmin();
+      
+      // Users can update their own notifications (mark as read)
+      allow update: if isOwner(userId);
+      
+      // Admin can delete notifications
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // AUDIT LOGS COLLECTION
+    // ============================================================================
+    match /auditLogs/{logId} {
+      // Only admin and registrar can read audit logs
+      allow read: if isAdmin() || isRegistrar();
+      
+      // System can create audit logs
+      allow create: if request.auth == null || isAdmin();
+      
+      // Audit logs cannot be modified or deleted
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // SETTINGS COLLECTION
+    // ============================================================================
+    match /settings/{settingId} {
+      // Everyone can read public settings
+      allow read: if resource.data.isPublic == true;
+      
+      // Admin can read all settings
+      allow read: if isAdmin();
+      
+      // Admin can create and update settings
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // REPORTS COLLECTION
+    // ============================================================================
+    match /reports/{reportId} {
+      // Faculty can read their course reports
+      allow read: if isFaculty() &&
+        exists(/databases/$(database)/documents/courses/$(resource.data.courseId)) &&
+        get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.facultyId == request.auth.uid;
+      
+      // Registrar can read all reports
+      allow read: if isRegistrar();
+      
+      // Admin can read and manage reports
+      allow read: if isAdmin();
+      allow create: if isAdmin() || isRegistrar();
+      allow update: if isAdmin() || isRegistrar();
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // EMAIL LOGS COLLECTION
+    // ============================================================================
+    match /emailLogs/{logId} {
+      // Only admin can read email logs
+      allow read: if isAdmin();
+      
+      // System can create email logs
+      allow create: if request.auth == null || isAdmin();
+      
+      // Email logs cannot be modified
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
+

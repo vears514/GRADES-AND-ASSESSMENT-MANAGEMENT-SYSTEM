@@ -10,6 +10,27 @@ export interface User {
   role: UserRole
   department: string
   profilePhoto?: string
+  authMethod?: 'email' | 'google'
+
+  // student-specific
+  studentId?: string
+  course?: string
+  yearLevel?: string
+  section?: string
+  adviser?: string
+  currentGPA?: number
+  enrolledSubjects?: string[]
+  semester?: string
+  schoolYear?: string
+
+  // faculty-specific
+  facultyId?: string
+  assignedSubjects?: string[]
+  handledSections?: string[]
+  currentSemester?: string
+
+  // audit/system
+  lastLogin?: Date
   createdAt: Date
   updatedAt: Date
 }

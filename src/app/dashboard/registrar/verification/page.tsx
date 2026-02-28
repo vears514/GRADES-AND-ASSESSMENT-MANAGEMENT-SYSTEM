@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRequireRole } from '@/hooks/useRequireRole'
 
 interface GradeForVerification {
   id: string
@@ -17,6 +18,8 @@ interface GradeForVerification {
 }
 
 export default function VerificationPage() {
+  const allowed = useRequireRole(['registrar','admin'])
+  if (!allowed) return <div>Checking permissions…</div>
   const [grades, setGrades] = useState<GradeForVerification[]>([
     {
       id: 'G001',

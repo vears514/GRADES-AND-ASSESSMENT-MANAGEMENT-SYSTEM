@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRequireRole } from '@/hooks/useRequireRole'
 
 interface CorrectionRequest {
   id: string
@@ -22,6 +23,8 @@ interface CorrectionRequest {
 }
 
 export default function CorrectionRequestPage() {
+  const allowed = useRequireRole(['faculty','admin'])
+  if (!allowed) return <div>Checking permissions…</div>
   const [requests, setRequests] = useState<CorrectionRequest[]>([
     {
       id: 'CR001',

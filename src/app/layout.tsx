@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { ClientLayout } from './ClientLayout'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -19,9 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white text-gray-900">
-        <div className="min-h-screen flex flex-col">
-          {children}
-        </div>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )

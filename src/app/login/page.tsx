@@ -4,6 +4,25 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
 import { authService } from '@/services/authService'
+import { DEMO_ACCOUNTS, isDemoModeEnabled } from '@/config/demoAccounts'
+
+// determine where to send a user based on their role
+function getPathForRole(role?: string) {
+  // always send to the profile router – it will branch itself
+  // by leaving the role in the URL we also support deep links in future
+  switch (role) {
+    case 'student':
+      return '/dashboard/profile/student'
+    case 'faculty':
+      return '/dashboard/profile/faculty'
+    case 'registrar':
+      return '/dashboard/profile/registrar'
+    case 'admin':
+      return '/dashboard/profile/admin'
+    default:
+      return '/dashboard/profile'
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,10 +47,13 @@ export default function LoginPage() {
     }
 
     try {
-      await authService.login(email, password)
+      const userCredential = await authService.login(email, password)
       setSuccess('Login successful! Redirecting...')
-      setTimeout(() => {
-        router.push('/dashboard')
+      setTimeout(async () => {
+        // fetch profile for role-based routing
+        const profile = await authService.getUserData(userCredential.uid)
+        const destination = profile ? getPathForRole(profile.role) : '/dashboard'
+        router.push(destination)
       }, 1500)
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.')
@@ -42,22 +64,85 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     setError('')
+    setSuccess('')
     setLoading(true)
 
     try {
+      console.log('Google Sign-In button clicked')
       const { user, isNewUser } = await authService.signInWithGoogle()
+      console.log('Sign-in successful:', user.email, 'isNewUser:', isNewUser)
+      
       setSuccess('Google sign-in successful! Redirecting...')
       
       // If it's a new user, you might want to redirect to complete profile
       // Otherwise go to dashboard
-      setTimeout(() => {
-        router.push(isNewUser ? '/dashboard/profile-setup' : '/dashboard')
+      setTimeout(async () => {
+        if (isNewUser) {
+          router.push('/dashboard/profile-setup')
+        } else {
+          // fetch role and route accordingly for existing users
+          const profile = user ? await authService.getUserData(user.uid) : null
+          const destination = profile ? getPathForRole(profile.role) : '/dashboard'
+          router.push(destination)
+        }
       }, 1500)
     } catch (err: any) {
-      if (err.message === 'Sign-in was cancelled') {
+      console.error('Google Sign-In failed:', err)
+
+      // handle some common error codes explicitly
+      if (err.code === 'auth/invalid-credential') {
+        setError(
+          'Google authentication returned invalid credentials. ' +
+          'Please check your Firebase configuration (OAuth client IDs, ' +
+          'authorized domains) and try again.'
+        )
+      } else if (err.message.includes('cancelled') || err.message.includes('closed')) {
         setError('Sign-in was cancelled. Please try again.')
+      } else if (err.message.includes('popup')) {
+        setError(err.message)
       } else {
         setError(err.message || 'Google sign-in failed. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async (role: 'student' | 'faculty' | 'registrar' | 'admin') => {
+    setError('')
+    setSuccess('')
+    setLoading(true)
+
+    try {
+      const demoAccount = DEMO_ACCOUNTS[role]
+      console.log('Demo login attempt for role:', role)
+      
+      const userCredential = await authService.loginWithDemo(demoAccount)
+      setSuccess(`Demo ${role} login successful! Redirecting...`)
+      
+      setTimeout(async () => {
+        // after demo login we already know role by parameter but keep generic
+        const destination = getPathForRole(role)
+        router.push(destination)
+      }, 1500)
+    } catch (err: any) {
+      console.error('Demo login error:', err)
+      
+      // Handle specific Firebase errors
+      if (err.message.includes('not found') || err.message.includes('setup-demo-accounts')) {
+        setError(
+          `Demo accounts not created in Firebase. QUICK FIX:\n\n` +
+          `1. Open a terminal in this project\n` +
+          `2. Run: node setup-demo-accounts.js\n` +
+          `3. Try login again\n\n` +
+          `(Make sure serviceAccountKey.json is in your project root)`
+        )
+      } else if (err.message.includes('auth/wrong-password')) {
+        setError('Incorrect password. Demo password is: DemoPass123!')
+      } else if (err.message.includes('offline')) {
+        setError('Firestore connection issue. Please check your internet connection.')
+      } else {
+        setError(err.message || `Demo login failed. Please try again.`)
       }
     } finally {
       setLoading(false)
@@ -84,7 +169,7 @@ export default function LoginPage() {
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-3">
-              <span className="text-lg">⚠️</span>
+              <span className="text-lg">!</span>
               <div>{error}</div>
             </div>
           )}
@@ -127,7 +212,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
             </div>
@@ -180,6 +265,40 @@ export default function LoginPage() {
             </svg>
             Continue with Google
           </button>
+
+          {/* Demo Accounts Section (Development Only) */}
+          {isDemoModeEnabled() && (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-center text-sm text-gray-500 mb-3">Demo Accounts (Development Only)</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin('student')}
+                  disabled={loading}
+                  className="py-2 px-2 text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin('faculty')}
+                  disabled={loading}
+                  className="py-2 px-2 text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Faculty
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin('registrar')}
+                  disabled={loading}
+                  className="py-2 px-2 text-xs font-semibold text-white bg-green-500 hover:bg-green-600 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Registrar
+                </button>
+              </div>
+              <p className="text-center text-xs text-gray-400 mt-2">Password: DemoPass123!</p>
+            </div>
+          )}
 
           <div className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{' '}

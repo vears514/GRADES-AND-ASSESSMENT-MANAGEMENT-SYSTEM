@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRequireRole } from '@/hooks/useRequireRole'
 
 interface Grade {
   id: string
@@ -12,6 +13,8 @@ interface Grade {
 }
 
 export default function GradesPage() {
+  const allowed = useRequireRole(['faculty','admin'])
+  if (!allowed) return <div>Checking permissions…</div>
   const [grades, setGrades] = useState<Grade[]>([
     {
       id: '1',

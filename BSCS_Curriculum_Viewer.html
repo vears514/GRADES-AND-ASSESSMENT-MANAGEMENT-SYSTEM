@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSCS Curriculum & Grade Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .header .subtitle {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-top: 0.5rem;
+        }
+
+        /* Year Sections */
+        .year-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .year-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .semesters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        @media (max-width: 1000px) {
+            .semesters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Semester Card */
+        .semester-card {
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .semester-card:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .semester-header {
+            background-color: #f8f9ff;
+            border-bottom: 2px solid #667eea;
+            padding: 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #f5f7ff;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        th {
+            padding: 1rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        td {
+            padding: 0.9rem 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafbff;
+        }
+
+        tbody tr:hover {
+            background-color: #f0f4ff;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #667eea;
+            width: 100px;
+            min-width: 100px;
+        }
+
+        .description {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .units {
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            width: 80px;
+            min-width: 80px;
+        }
+
+        .grade-cell {
+            text-align: center;
+            width: 80px;
+            min-width: 80px;
+        }
+
+        /* Grade Badge */
+        .grade-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: 2px solid;
+        }
+
+        .grade-a {
+            background-color: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .grade-a-minus {
+            background-color: #dbeafe;
+            color: #0c4a6e;
+            border-color: #93c5fd;
+        }
+
+        .grade-b-plus {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+
+        .grade-b {
+            background-color: #fed7aa;
+            color: #9a3412;
+            border-color: #fb923c;
+        }
+
+        /* Semester Summary */
+        .semester-summary {
+            background-color: #f8f9ff;
+            border-top: 2px solid #e0e0e0;
+            padding: 1rem 0.75rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-value {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        /* Program Summary */
+        .program-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .program-summary h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .summary-item h4 {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .summary-item .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        /* Legend */
+        .legend {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #999;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.6rem 0.4rem;
+            }
+
+            .code {
+                width: 70px;
+                min-width: 70px;
+                font-size: 0.8rem;
+            }
+
+            .units, .grade-cell {
+                width: 60px;
+                min-width: 60px;
+            }
+
+            .year-header {
+                font-size: 1.4rem;
+                padding: 1rem;
+            }
+
+            .semesters-grid {
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .summary-grid {
+                gap: 1rem;
+            }
+
+            .summary-item .value {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .year-section {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>BSCS Curriculum & Grade Viewer</h1>
+            <p>Bachelor of Science in Computer Science</p>
+            <p class="subtitle">Total Units Required: 124</p>
+        </div>
+
+        <!-- Year 1 -->
+        <div class="year-section">
+            <div class="year-header">📚 Year 1</div>
+            <div class="semesters-grid">
+                <!-- Semester 1 -->
+                <div class="semester-card">
+                    <div class="semester-header">1st Semester</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="code">Code</th>
+                                <th class="description">Description</th>
+                                <th class="units">Units</th>
+                                <th class="grade-cell">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="code">CS 101</td>
+                                <td class="description">Reading and Appreciation of Literature</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 181</td>
+                                <td class="description">Fundamentals of Programming I</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 182</td>
+                                <td class="description">Business Application Software</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 802</td>
+                                <td class="description">Reading in Philippine History</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">GEC 804</td>
+                                <td class="description">Mathematics in the Modern World</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">NSTP 181</td>
+                                <td class="description">NSTP Civics Uitility Training 1</td>
+                                <td class="units">2</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">PATHFIT 1</td>
+                                <td class="description">Movement Competency Training</td>
+                                <td class="units">2</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="semester-summary">
+                        <div class="summary-row">
+                            <span>Total Units:</span>
+                            <span class="summary-value">19 units</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Semester GPA:</span>
+                            <span class="summary-value">3.81</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semester 2 -->
+                <div class="semester-card">
+                    <div class="semester-header">2nd Semester</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="code">Code</th>
+                                <th class="description">Description</th>
+                                <th class="units">Units</th>
+                                <th class="grade-cell">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="code">CS 191</td>
+                                <td class="description">Purposive Communication</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">GEC 181</td>
+                                <td class="description">Understanding the Self</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 193</td>
+                                <td class="description">Intermediate Programming</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 193</td>
+                                <td class="description">Web Systems and Technologies</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 188</td>
+                                <td class="description">Technical Computer Concepts</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">LIT 081</td>
+                                <td class="description">Philippine Literature in English</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">PATHFIT 2</td>
+                                <td class="description">Exercise-Based Fitness Activities</td>
+                                <td class="units">2</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="semester-summary">
+                        <div class="summary-row">
+                            <span>Total Units:</span>
+                            <span class="summary-value">20 units</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Semester GPA:</span>
+                            <span class="summary-value">3.81</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Year 2 -->
+        <div class="year-section">
+            <div class="year-header">📚 Year 2</div>
+            <div class="semesters-grid">
+                <!-- Semester 1 -->
+                <div class="semester-card">
+                    <div class="semester-header">1st Semester</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="code">Code</th>
+                                <th class="description">Description</th>
+                                <th class="units">Units</th>
+                                <th class="grade-cell">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="code">CS 184</td>
+                                <td class="description">Data Structures and Algorithms</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 153</td>
+                                <td class="description">Introduction to Management</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 185</td>
+                                <td class="description">Database Management</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 391</td>
+                                <td class="description">Logic Circuits and Intelligent Theory</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 188</td>
+                                <td class="description">Discrete Structures 1</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">PR 882</td>
+                                <td class="description">Differential Calculus</td>
+                                <td class="units">3</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">PATHFIT 3</td>
+                                <td class="description">Dance and Fitness</td>
+                                <td class="units">2</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="semester-summary">
+                        <div class="summary-row">
+                            <span>Total Units:</span>
+                            <span class="summary-value">20 units</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Semester GPA:</span>
+                            <span class="summary-value">3.71</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semester 2 -->
+                <div class="semester-card">
+                    <div class="semester-header">2nd Semester</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="code">Code</th>
+                                <th class="description">Description</th>
+                                <th class="units">Units</th>
+                                <th class="grade-cell">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="code">CS 110</td>
+                                <td class="description">Digital Graphics</td>
+                                <td class="units">1.88</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 104</td>
+                                <td class="description">Discrete Structures 1</td>
+                                <td class="units">1.32</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 109</td>
+                                <td class="description">Programming Languages</td>
+                                <td class="units">1.32</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 187</td>
+                                <td class="description">Embedded Programming</td>
+                                <td class="units">1.32</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">GEC 981</td>
+                                <td class="description">Human Computer Interaction</td>
+                                <td class="units">1.32</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CSM 123</td>
+                                <td class="description">Integral Calculus</td>
+                                <td class="units">1.88</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">PATHFIT 4</td>
+                                <td class="description">Sports and Fitness</td>
+                                <td class="units">2</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="semester-summary">
+                        <div class="summary-row">
+                            <span>Total Units:</span>
+                            <span class="summary-value">10.4 units</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Semester GPA:</span>
+                            <span class="summary-value">3.80</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Year 3 -->
+        <div class="year-section">
+            <div class="year-header">📚 Year 3</div>
+            <div class="semesters-grid">
+                <!-- Semester 1 -->
+                <div class="semester-card">
+                    <div class="semester-header">1st Semester</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="code">Code</th>
+                                <th class="description">Description</th>
+                                <th class="units">Units</th>
+                                <th class="grade-cell">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="code">CS 132</td>
+                                <td class="description">Web Systems and Concepts</td>
+                                <td class="units">1.75</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 139</td>
+                                <td class="description">Software Engineering 1</td>
+                                <td class="units">2.60</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 135</td>
+                                <td class="description">Systems and Communications</td>
+                                <td class="units">1.50</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 184</td>
+                                <td class="description">Algorithm and Complexity</td>
+                                <td class="units">1.60</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CSM 184</td>
+                                <td class="description">Digital Fundamentals</td>
+                                <td class="units">2.60</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">GEC 987</td>
+                                <td class="description">Science and Technology</td>
+                                <td class="units">1.25</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">GEC 988</td>
+                                <td class="description">Ethics</td>
+                                <td class="units">1.75</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="semester-summary">
+                        <div class="summary-row">
+                            <span>Total Units:</span>
+                            <span class="summary-value">13 units</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Semester GPA:</span>
+                            <span class="summary-value">3.81</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semester 2 -->
+                <div class="semester-card">
+                    <div class="semester-header">2nd Semester</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="code">Code</th>
+                                <th class="description">Description</th>
+                                <th class="units">Units</th>
+                                <th class="grade-cell">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="code">CS 184</td>
+                                <td class="description">Applications Development</td>
+                                <td class="units">1.75</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 134</td>
+                                <td class="description">Software Engineering 2</td>
+                                <td class="units">1.75</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CS 179</td>
+                                <td class="description">Architecture and Organization</td>
+                                <td class="units">2.60</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">CSE 182</td>
+                                <td class="description">Graphics and Visual Computing</td>
+                                <td class="units">1.58</td>
+                                <td class="grade-cell"><span class="grade-badge grade-b-plus">B+</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">EC 962</td>
+                                <td class="description">Art Appreciation</td>
+                                <td class="units">1.75</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">GEM 881</td>
+                                <td class="description">Life & Works of Rizal</td>
+                                <td class="units">1.75</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a-minus">A-</span></td>
+                            </tr>
+                            <tr>
+                                <td class="code">HIS 981</td>
+                                <td class="description">Methods of Research</td>
+                                <td class="units">1.00</td>
+                                <td class="grade-cell"><span class="grade-badge grade-a">A</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="semester-summary">
+                        <div class="summary-row">
+                            <span>Total Units:</span>
+                            <span class="summary-value">12.18 units</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Semester GPA:</span>
+                            <span class="summary-value">3.81</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Program Summary -->
+        <div class="program-summary">
+            <h3>Program Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h4>Total Units Completed</h4>
+                    <div class="value">124</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Total Subjects</h4>
+                    <div class="value">49</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Overall GPA</h4>
+                    <div class="value">3.79</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h3>Grade Scale</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="grade-badge grade-a">A</span>
+                    <span>4.0 GPA</span>
+                </div>
+                <div class="legend-item">
+                    <span class="grade-badge grade-a-minus">A-</span>
+                    <span>3.7 GPA</span>
+                </div>
+                <div class="legend-item">
+                    <span class="grade-badge grade-b-plus">B+</span>
+                    <span>3.3 GPA</span>
+                </div>
+                <div class="legend-item">
+                    <span class="grade-badge grade-b">B</span>
+                    <span>3.0 GPA</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Last Updated: <span id="date"></span></p>
+            <p>This is a school project demonstrating curriculum and grade tracking.</p>
+        </div>
+    </div>
+
+    <script>
+        // Update the date dynamically
+        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    </script>
+</body>
+</html>

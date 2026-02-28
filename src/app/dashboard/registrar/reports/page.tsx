@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRequireRole } from '@/hooks/useRequireRole'
 
 interface ReportType {
   id: string
@@ -30,6 +31,8 @@ interface CourseReport {
 }
 
 export default function ReportsPage() {
+  const allowed = useRequireRole(['registrar','admin'])
+  if (!allowed) return <div>Checking permissions…</div>
   const [reportType, setReportType] = useState<'class' | 'summary' | 'analytics'>('class')
   const [selectedCourse, setSelectedCourse] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -109,9 +112,9 @@ export default function ReportsPage() {
             <label className="block text-sm font-medium mb-2">Report Type</label>
             <div className="space-y-2">
               {[
-                { value: 'class', label: '📊 Class Grade Sheet' },
-                { value: 'summary', label: '📈 Summary Report' },
-                { value: 'analytics', label: '📉 Analytics Dashboard' }
+                { value: 'class', label: 'Class Grade Sheet' },
+                { value: 'summary', label: 'Summary Report' },
+                { value: 'analytics', label: 'Analytics Dashboard' }
               ].map(option => (
                 <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                   <input

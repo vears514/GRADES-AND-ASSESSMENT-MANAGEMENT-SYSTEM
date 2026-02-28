@@ -1,5 +1,5 @@
 // Firebase Authentication handlers for GradeHub
-import { auth } from './firebase'
+import { getDb } from './firebase'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -10,8 +10,9 @@ import {
   User,
   AuthError,
 } from 'firebase/auth'
-import { db } from './firebase'
+import { getFirebaseServices } from './firebase'
 import { setDoc, doc, getDoc } from 'firebase/firestore'
+import { getAuth_ } from './firebase'
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -41,6 +42,9 @@ export const registerWithEmail = async (
   department: string
 ): Promise<{ user: User; profile: UserProfile }> => {
   try {
+    const auth = getAuth_()
+    const db = getDb()
+    if (!auth || !db) throw new Error('Firebase not initialized')
     // Create user account
     const result = await createUserWithEmailAndPassword(auth, email, password)
     const user = result.user
@@ -72,6 +76,8 @@ export const signInWithEmail = async (
   password: string
 ): Promise<User> => {
   try {
+    const auth = getAuth_()
+    if (!auth) throw new Error('Firebase not initialized')
     const result = await signInWithEmailAndPassword(auth, email, password)
     return result.user
   } catch (error: any) {
@@ -87,6 +93,9 @@ export const signInWithGoogle = async (): Promise<{
   profile?: UserProfile
 }> => {
   try {
+    const auth = getAuth_()
+    const db = getDb()
+    if (!auth || !db) throw new Error('Firebase not initialized')
     const result = await signInWithPopup(auth, googleProvider)
     const user = result.user
 
@@ -122,6 +131,8 @@ export const signInWithGoogle = async (): Promise<{
  */
 export const logOut = async (): Promise<void> => {
   try {
+    const auth = getAuth_()
+    if (!auth) throw new Error('Firebase not initialized')
     await signOut(auth)
   } catch (error: any) {
     throw new Error(getErrorMessage(error))
@@ -132,6 +143,11 @@ export const logOut = async (): Promise<void> => {
  * Subscribe to auth state changes
  */
 export const onAuthChange = (callback: (user: User | null) => void) => {
+  const auth = getAuth_()
+  if (!auth) {
+    console.error('Firebase auth not initialized')
+    return () => {}
+  }
   return onAuthStateChanged(auth, callback)
 }
 
@@ -140,6 +156,11 @@ export const onAuthChange = (callback: (user: User | null) => void) => {
  */
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
   try {
+    const db = getDb()
+    if (!db) {
+      console.error('Firebase database not initialized')
+      return null
+    }
     const userDocRef = doc(db, 'users', uid)
     const userDocSnap = await getDoc(userDocRef)
 
@@ -161,6 +182,8 @@ export const updateUserProfile = async (
   updates: Partial<UserProfile>
 ): Promise<void> => {
   try {
+    const db = getDb()
+    if (!db) throw new Error('Firebase not initialized')
     const userDocRef = doc(db, 'users', uid)
     await setDoc(userDocRef, updates, { merge: true })
   } catch (error: any) {
@@ -193,5 +216,3 @@ function getErrorMessage(error: AuthError): string {
       return error.message || 'Authentication failed. Please try again.'
   }
 }
-
-export default auth

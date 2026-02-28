@@ -38,7 +38,7 @@ export default function RegisterPage() {
   const roleDescriptions = {
     student: 'View grades, transcripts, and academic progress',
     faculty: 'Enter, manage, and request grade corrections',
-    registrar: 'Verify, approve, and generate grade reports',
+    admin: 'Full access to system settings, user management, and reports',
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -52,7 +52,13 @@ export default function RegisterPage() {
     setSuccess('')
 
     // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.department) {
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.password ||
+      (formData.role !== 'admin' && !formData.department)
+    ) {
       setError('Please fill in all required fields')
       return
     }
@@ -132,7 +138,7 @@ export default function RegisterPage() {
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-3">
-              <span className="text-lg">⚠️</span>
+              <span className="text-lg">!</span>
               <div>{error}</div>
             </div>
           )}
@@ -197,28 +203,30 @@ export default function RegisterPage() {
                 disabled={loading}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               >
-                <option value="student">👨‍🎓 Student</option>
-                <option value="faculty">👨‍🏫 Faculty</option>
-                <option value="registrar">👨‍💼 Registrar</option>
+                <option value="student">Student</option>
+                <option value="faculty">Faculty</option>
+                <option value="admin">Super Admin</option>
               </select>
               {formData.role && (
                 <p className="text-xs text-gray-600 mt-2 italic">{roleDescriptions[formData.role as keyof typeof roleDescriptions]}</p>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
-              <input
-                type="text"
-                required
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                disabled={loading}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="e.g., Computer Science"
-              />
-            </div>
+            {formData.role !== 'admin' && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                <input
+                  type="text"
+                  required
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="e.g., Computer Science"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>

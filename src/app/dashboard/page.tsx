@@ -1,14 +1,23 @@
+'use client'
+
+import { useRequireRole } from '@/hooks/useRequireRole'
+
 export default function DashboardPage() {
+  const allowed = useRequireRole(['student','faculty','registrar','admin'])
+  if (allowed === null) {
+    return <div>Checking permissions…</div>
+  }
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Total Grades" value="156" change="+12 this month" icon="📊" />
-        <StatCard title="Pending Review" value="23" change="3 urgent" icon="⏳" />
-        <StatCard title="Approved" value="133" change="100%" icon="✓" />
-        <StatCard title="Average Score" value="82.5" change="Up 2.3 points" icon="📈" />
+        <StatCard title="Total Grades" value="156" change="+12 this month" icon="" />
+        <StatCard title="Pending Review" value="23" change="3 urgent" icon="" />
+        <StatCard title="Approved" value="133" change="100%" icon="" />
+        <StatCard title="Average Score" value="82.5" change="Up 2.3 points" icon="" />
       </div>
 
       {/* Grade Management Modules */}
@@ -22,7 +31,7 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold text-blue-700">Grade Encoding</h3>
                 <p className="text-sm text-gray-600 mt-1">Faculty Module</p>
               </div>
-              <div className="text-3xl">📝</div>
+              <div className="text-3xl"></div>
             </div>
             <p className="text-gray-700 mb-4">Enter and manage student grades for your courses</p>
             <ul className="text-sm space-y-1 mb-4">
@@ -43,7 +52,7 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold text-green-700">Grade Verification</h3>
                 <p className="text-sm text-gray-600 mt-1">Registrar Module</p>
               </div>
-              <div className="text-3xl">✓</div>
+              <div className="text-3xl"></div>
             </div>
             <p className="text-gray-700 mb-4">Review and approve submitted grades before posting</p>
             <ul className="text-sm space-y-1 mb-4">
@@ -64,7 +73,7 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold text-purple-700">My Grades</h3>
                 <p className="text-sm text-gray-600 mt-1">Student Module</p>
               </div>
-              <div className="text-3xl">🎓</div>
+              <div className="text-3xl"></div>
             </div>
             <p className="text-gray-700 mb-4">View your academic records and calculate GPA</p>
             <ul className="text-sm space-y-1 mb-4">
@@ -85,7 +94,7 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold text-orange-700">Grade Corrections</h3>
                 <p className="text-sm text-gray-600 mt-1">Faculty Module</p>
               </div>
-              <div className="text-3xl">✏️</div>
+              <div className="text-3xl"></div>
             </div>
             <p className="text-gray-700 mb-4">Request and manage grade changes with documentation</p>
             <ul className="text-sm space-y-1 mb-4">
@@ -106,7 +115,7 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold text-red-700">Reports & Analytics</h3>
                 <p className="text-sm text-gray-600 mt-1">Registrar Module</p>
               </div>
-              <div className="text-3xl">📊</div>
+              <div className="text-3xl"></div>
             </div>
             <p className="text-gray-700 mb-4">Generate comprehensive grade reports and analytics</p>
             <ul className="text-sm space-y-1 mb-4">
@@ -127,7 +136,7 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold text-gray-800">System Overview</h3>
                 <p className="text-sm text-gray-600 mt-1">All Roles</p>
               </div>
-              <div className="text-3xl">⚙️</div>
+              <div className="text-3xl"></div>
             </div>
             <p className="text-gray-700 mb-4">Complete grade management with validation & auditing</p>
             <ul className="text-sm space-y-1 mb-4">
@@ -153,28 +162,28 @@ export default function DashboardPage() {
               description="COMP 101 - 45 grades submitted for verification"
               time="2 hours ago"
               status="pending"
-              icon="📝"
+              icon=""
             />
             <ActivityItem
               title="Grades Verified"
               description="MATH 201 - All grades approved and posted"
               time="5 hours ago"
               status="approved"
-              icon="✓"
+              icon=""
             />
             <ActivityItem
               title="Correction Request"
               description="ENG 102 - Student requested grade appeal"
               time="1 day ago"
               status="info"
-              icon="✏️"
+              icon=""
             />
             <ActivityItem
               title="Report Generated"
               description="Fall 2025 Summary - Class averages and distribution"
               time="2 days ago"
               status="approved"
-              icon="📊"
+              icon=""
             />
           </div>
         </div>
@@ -183,19 +192,19 @@ export default function DashboardPage() {
           <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
           <div className="space-y-3">
             <a href="/dashboard/faculty/grades" className="button-primary w-full text-center inline-block">
-              ➕ Enter Grades
+              Enter Grades
             </a>
             <a href="/dashboard/registrar/verification" className="button-secondary w-full text-center inline-block">
-              ✓ Review Grades
+              Review Grades
             </a>
             <a href="/dashboard/registrar/reports" className="button-secondary w-full text-center inline-block">
-              📊 View Reports
+              View Reports
             </a>
             <a href="/dashboard/student/grades" className="button-secondary w-full text-center inline-block">
-              🎓 My Grades
+              My Grades
             </a>
             <button className="button-secondary w-full">
-              ⚙️ Settings
+              Settings
             </button>
           </div>
         </div>

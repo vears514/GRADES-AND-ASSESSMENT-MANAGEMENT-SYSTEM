@@ -118,6 +118,47 @@ async function setupDemoAccounts() {
   }
 
   console.log('🎭 Demo account setup complete!')
+
+  // --- Seed Demo Course and Enrollment ---
+  console.log('\n📚 Seeding demo course and enrollment...')
+  try {
+    const facultyRecord = await auth.getUserByEmail(DEMO_ACCOUNTS.faculty.email);
+    const studentRecord = await auth.getUserByEmail(DEMO_ACCOUNTS.student.email);
+
+    const courseId = 'DEMO-CS101';
+    await db.collection('courses').doc(courseId).set({
+      id: courseId,
+      code: 'CS101',
+      name: 'Introduction to Computer Science (Demo)',
+      department: 'Computer Science',
+      semester: '1st Semester',
+      year: 2024,
+      instructor: {
+        id: facultyRecord.uid,
+        name: `${DEMO_ACCOUNTS.faculty.firstName} ${DEMO_ACCOUNTS.faculty.lastName}`
+      },
+      students: [studentRecord.uid],
+      credits: 3,
+      createdAt: admin.firestore.Timestamp.now(),
+      isPublished: true
+    });
+    console.log(`✅ Seeded course: CS101 for ${DEMO_ACCOUNTS.faculty.email}`);
+
+    const enrollmentId = `${studentRecord.uid}_${courseId}`;
+    await db.collection('enrollments').doc(enrollmentId).set({
+      studentId: studentRecord.uid,
+      courseId: courseId,
+      status: 'enrolled',
+      createdAt: admin.firestore.Timestamp.now(),
+      updatedAt: admin.firestore.Timestamp.now(),
+      semester: '1st Semester',
+      academicYear: '2024-2025'
+    });
+    console.log(`✅ Enrolled ${DEMO_ACCOUNTS.student.email} in CS101`);
+  } catch (error) {
+    console.error('❌ Error seeding demo course/enrollment:', error.message);
+  }
+
   console.log('\nYou can now login with:')
   console.log('- Student: student@demo.com / DemoPass123!')
   console.log('- Faculty: faculty@demo.com / DemoPass123!')

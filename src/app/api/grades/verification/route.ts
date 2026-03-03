@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     // Validate request body
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
@@ -57,11 +57,11 @@ export async function POST(request: NextRequest) {
 
     // Forward to actual GraphQL endpoint if configured
     const graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT
-    
+
     if (!graphqlEndpoint) {
       // Return mock data if no GraphQL endpoint is configured
       console.warn('No NEXT_PUBLIC_GRAPHQL_ENDPOINT configured, returning mock data')
-      
+
       // Mock response for getAuthStudentClasses query
       if (body.query && body.query.includes('getAuthStudentClasses')) {
         return NextResponse.json({
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await graphqlResponse.json()
-    
+
     // Ensure response is properly formatted
     if (!data || typeof data !== 'object') {
       return NextResponse.json(
@@ -134,11 +134,11 @@ export async function POST(request: NextRequest) {
 // PUT /api/grades/:id/verify
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{}> }
 ) {
   try {
     const body = await request.json()
-    const { action, comments } = body
+    const { id, action, comments } = body
 
     if (!['approve', 'reject'].includes(action)) {
       return NextResponse.json(
@@ -149,7 +149,7 @@ export async function PUT(
 
     // TODO: Update grade status in Firestore
     const updated = {
-      id: params.id,
+      id: id,
       status: action === 'approve' ? 'approved' : 'rejected',
       verifiedAt: new Date(),
       comments,

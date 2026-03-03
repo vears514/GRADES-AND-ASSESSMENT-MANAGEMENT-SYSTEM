@@ -65,6 +65,14 @@ const DEMO_ACCOUNTS = {
     lastName: 'Registrar',
     department: 'Administration',
   },
+  admin: {
+    email: 'admin@demo.com',
+    password: 'DemoPass123!',
+    role: 'admin',
+    firstName: 'Super',
+    lastName: 'Admin',
+    department: 'IT Department',
+  },
 }
 
 async function setupDemoAccounts() {
@@ -114,6 +122,7 @@ async function setupDemoAccounts() {
   console.log('- Student: student@demo.com / DemoPass123!')
   console.log('- Faculty: faculty@demo.com / DemoPass123!')
   console.log('- Registrar: registrar@demo.com / DemoPass123!')
+  console.log('- Admin: admin@demo.com / DemoPass123!')
 
   process.exit(0)
 }

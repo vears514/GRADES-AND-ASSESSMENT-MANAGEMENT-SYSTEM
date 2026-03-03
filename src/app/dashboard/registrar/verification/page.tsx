@@ -18,8 +18,7 @@ interface GradeForVerification {
 }
 
 export default function VerificationPage() {
-  const allowed = useRequireRole(['registrar','admin'])
-  if (!allowed) return <div>Checking permissions…</div>
+  const allowed = useRequireRole(['registrar', 'admin'])
   const [grades, setGrades] = useState<GradeForVerification[]>([
     {
       id: 'G001',
@@ -65,6 +64,8 @@ export default function VerificationPage() {
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null)
   const [comments, setComments] = useState('')
 
+  if (!allowed) return <div>Checking permissions…</div>
+
   const filteredGrades = grades.filter(g => {
     if (filterStatus !== 'all' && g.status !== filterStatus) return false
     if (filterCourse && g.courseCode !== filterCourse) return false
@@ -72,8 +73,8 @@ export default function VerificationPage() {
   })
 
   const handleApprove = (gradeId: string) => {
-    setGrades(prev => prev.map(g => 
-      g.id === gradeId 
+    setGrades(prev => prev.map(g =>
+      g.id === gradeId
         ? { ...g, status: 'approved', remarks: comments || 'Approved' }
         : g
     ))
@@ -82,8 +83,8 @@ export default function VerificationPage() {
   }
 
   const handleReject = (gradeId: string) => {
-    setGrades(prev => prev.map(g => 
-      g.id === gradeId 
+    setGrades(prev => prev.map(g =>
+      g.id === gradeId
         ? { ...g, status: 'rejected', remarks: comments || 'Rejected' }
         : g
     ))
@@ -139,7 +140,7 @@ export default function VerificationPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Course</label>
-            <select 
+            <select
               className="input-field"
               value={filterCourse}
               onChange={(e) => setFilterCourse(e.target.value)}
@@ -152,7 +153,7 @@ export default function VerificationPage() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Status</label>
-            <select 
+            <select
               className="input-field"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
@@ -206,13 +207,12 @@ export default function VerificationPage() {
                 <td className="table-cell text-sm">{grade.submittedBy}</td>
                 <td className="table-cell text-sm">{grade.submittedDate}</td>
                 <td className="table-cell">
-                  <span className={`badge ${
-                    grade.status === 'approved'
-                      ? 'badge-success'
-                      : grade.status === 'rejected'
+                  <span className={`badge ${grade.status === 'approved'
+                    ? 'badge-success'
+                    : grade.status === 'rejected'
                       ? 'badge-error'
                       : 'badge-warning'
-                  }`}>
+                    }`}>
                     {grade.status.charAt(0).toUpperCase() + grade.status.slice(1)}
                   </span>
                 </td>
@@ -239,7 +239,7 @@ export default function VerificationPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h2 className="text-xl font-bold mb-4">Review Grade</h2>
-            
+
             {grades.find(g => g.id === selectedGrade) && (
               <div className="space-y-4 mb-6">
                 <div className="bg-gray-50 p-4 rounded">
@@ -249,7 +249,7 @@ export default function VerificationPage() {
                 <div className="bg-gray-50 p-4 rounded">
                   <p className="text-sm text-gray-600">Score & Grade</p>
                   <p className="font-semibold">
-                    {grades.find(g => g.id === selectedGrade)?.submittedScore} / 100 
+                    {grades.find(g => g.id === selectedGrade)?.submittedScore} / 100
                     ({grades.find(g => g.id === selectedGrade)?.letterGrade})
                   </p>
                 </div>

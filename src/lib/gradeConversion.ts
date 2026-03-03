@@ -310,7 +310,7 @@ export const calculateGradeStatistics = (
   const failedCourses = totalCourses - passedCourses
   const totalUnits = grades.reduce((sum, g) => sum + g.units, 0)
   const earnedUnits = grades.reduce((sum, g) => (isPassingGrade(g.gpa) ? sum + g.units : sum), 0)
-  const gpa = calculateWeightedGPA(grades)
+  const gpa = calculateGPA(grades.map(g => ({ grade: g.gpa, units: g.units })), '1.0')
   const passPercentage = totalCourses > 0 ? (passedCourses / totalCourses) * 100 : 0
 
   return {

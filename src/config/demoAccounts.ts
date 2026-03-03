@@ -7,7 +7,7 @@
 export interface DemoAccount {
   email: string
   password: string
-  role: 'student' | 'faculty' | 'registrar'
+  role: 'student' | 'faculty' | 'registrar' | 'admin'
   firstName: string
   lastName: string
   department: string
@@ -38,6 +38,14 @@ export const DEMO_ACCOUNTS: Record<string, DemoAccount> = {
     lastName: 'Registrar',
     department: 'Administration',
   },
+  admin: {
+    email: 'admin@demo.com',
+    password: 'DemoPass123!',
+    role: 'admin',
+    firstName: 'Super',
+    lastName: 'Admin',
+    department: 'IT Department',
+  },
 }
 
 /**
@@ -59,7 +67,7 @@ export const getAvailableDemoAccounts = () => {
  * Create a mock user session without Firebase
  * Used for testing when demo accounts don't exist in Firebase yet
  */
-export const createMockUserSession = (role: 'student' | 'faculty' | 'registrar') => {
+export const createMockUserSession = (role: 'student' | 'faculty' | 'registrar' | 'admin') => {
   if (process.env.NODE_ENV !== 'development') {
     throw new Error('Mock sessions only available in development mode')
   }

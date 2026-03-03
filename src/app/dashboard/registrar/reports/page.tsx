@@ -31,8 +31,7 @@ interface CourseReport {
 }
 
 export default function ReportsPage() {
-  const allowed = useRequireRole(['registrar','admin'])
-  if (!allowed) return <div>Checking permissions…</div>
+  const allowed = useRequireRole(['registrar', 'admin'])
   const [reportType, setReportType] = useState<'class' | 'summary' | 'analytics'>('class')
   const [selectedCourse, setSelectedCourse] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -55,6 +54,8 @@ export default function ReportsPage() {
       status: 'available'
     }
   ])
+
+  if (!allowed) return <div>Checking permissions…</div>
 
   const courseReports: { [key: string]: CourseReport } = {
     'COMP101': {
@@ -106,7 +107,7 @@ export default function ReportsPage() {
       {/* Report Generation Options */}
       <div className="card mb-8">
         <h2 className="text-xl font-bold mb-6">Generate New Report</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium mb-2">Report Type</label>
@@ -133,7 +134,7 @@ export default function ReportsPage() {
 
           <div>
             <label className="block text-sm font-medium mb-2">Select Course</label>
-            <select 
+            <select
               value={selectedCourse}
               onChange={(e) => setSelectedCourse(e.target.value)}
               className="input-field"
@@ -168,7 +169,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="flex gap-2">
-          <button 
+          <button
             onClick={handleGenerateReport}
             className="button-primary"
           >
@@ -221,7 +222,7 @@ export default function ReportsPage() {
       {selectedCourse && courseReports[selectedCourse] && (
         <div className="space-y-6">
           <h2 className="text-xl font-bold">Course Analytics - {selectedCourse}</h2>
-          
+
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="card bg-blue-50">
@@ -249,7 +250,7 @@ export default function ReportsPage() {
                     <span className="text-sm text-gray-600">{count} students</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full"
                       style={{ width: `${(count / courseReports[selectedCourse].totalStudents) * 100}%` }}
                     />

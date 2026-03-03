@@ -23,8 +23,7 @@ interface CorrectionRequest {
 }
 
 export default function CorrectionRequestPage() {
-  const allowed = useRequireRole(['faculty','admin'])
-  if (!allowed) return <div>Checking permissions…</div>
+  const allowed = useRequireRole(['faculty', 'admin'])
   const [requests, setRequests] = useState<CorrectionRequest[]>([
     {
       id: 'CR001',
@@ -60,7 +59,6 @@ export default function CorrectionRequestPage() {
       comments: 'Approved - Error in grading confirmed'
     },
   ])
-
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     courseCode: '',
@@ -73,6 +71,8 @@ export default function CorrectionRequestPage() {
     proposedGrade: '',
     reason: '',
   })
+
+  if (!allowed) return <div>Checking permissions…</div>
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -119,7 +119,7 @@ export default function CorrectionRequestPage() {
           <h1 className="text-3xl font-bold mb-2">Grade Correction Requests</h1>
           <p className="text-gray-600">Request grade changes with supporting documentation</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowForm(!showForm)}
           className="button-primary"
         >
@@ -151,7 +151,7 @@ export default function CorrectionRequestPage() {
       {showForm && (
         <div className="card mb-8 bg-blue-50 border-2 border-blue-200">
           <h2 className="text-xl font-bold mb-6">Create New Correction Request</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium mb-2">Course Code</label>
@@ -271,14 +271,14 @@ export default function CorrectionRequestPage() {
           </div>
 
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={handleSubmit}
               disabled={formData.reason.length < 50 || !formData.courseCode || !formData.proposedScore}
               className="button-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Submit Request
             </button>
-            <button 
+            <button
               onClick={() => setShowForm(false)}
               className="button-secondary"
             >
@@ -308,15 +308,14 @@ export default function CorrectionRequestPage() {
               </div>
               <div className="flex items-center justify-between md:justify-end">
                 <div>
-                  <span className={`badge ${
-                    request.status === 'approved' ? 'badge-success' :
+                  <span className={`badge ${request.status === 'approved' ? 'badge-success' :
                     request.status === 'rejected' ? 'badge-error' :
-                    request.status === 'under_review' || request.status === 'submitted' ? 'badge-warning' :
-                    'badge-info'
-                  }`}>
+                      request.status === 'under_review' || request.status === 'submitted' ? 'badge-warning' :
+                        'badge-info'
+                    }`}>
                     {request.status === 'under_review' ? 'Under Review' :
-                     request.status === 'submitted' ? 'Submitted' :
-                     request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                      request.status === 'submitted' ? 'Submitted' :
+                        request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                   </span>
                 </div>
               </div>

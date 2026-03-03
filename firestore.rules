@@ -72,7 +72,7 @@ service cloud.firestore {
       allow create: if request.auth != null && 
         request.auth.uid == userId &&
         request.resource.data.email is string &&
-        request.resource.data.role in ['student', 'faculty'];
+        request.resource.data.role in ['student', 'faculty', 'registrar', 'admin'];
       
       // Admin can create, update, and delete users
       allow create: if isAdmin();

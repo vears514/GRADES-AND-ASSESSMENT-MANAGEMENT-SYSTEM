@@ -29,7 +29,7 @@ export const authService = {
   // Register user with email and password
   async register(email: string, password: string, userData: Partial<User>): Promise<User> {
     const { auth, db } = getServices()
-    
+
     // Create Firebase auth user
     const { user: authUser } = await createUserWithEmailAndPassword(auth, email, password)
 
@@ -57,9 +57,9 @@ export const authService = {
   async signInWithGoogle(): Promise<{ user: FirebaseUser; isNewUser: boolean }> {
     try {
       const { auth, db } = getServices()
-      
+
       console.log('Starting Google Sign-In...')
-      
+
       // Ensure auth and db are initialized
       if (!auth) {
         throw new Error('Firebase Auth not initialized. Please refresh the page.')
@@ -71,7 +71,7 @@ export const authService = {
       console.log('Opening Google Sign-In popup...')
       const result = await signInWithPopup(auth, googleProvider)
       const authUser = result.user
-      
+
       console.log('Google Sign-In successful, user:', authUser.uid)
 
       // Check if user exists in Firestore
@@ -104,7 +104,7 @@ export const authService = {
           updatedAt: Timestamp.now(),
           authMethod: 'google',
         })
-        
+
         console.log('User profile created successfully')
       }
 
@@ -112,7 +112,7 @@ export const authService = {
       return { user: authUser, isNewUser }
     } catch (error: any) {
       console.error('Google Sign-In error:', error.code, error.message)
-      
+
       if (error.code === 'auth/popup-blocked') {
         throw new Error('Sign-in popup was blocked by your browser. Please allow popups and try again.')
       }
@@ -125,7 +125,7 @@ export const authService = {
       if (error.code === 'auth/network-request-failed') {
         throw new Error('Network error. Please check your internet connection and try again.')
       }
-      
+
       throw new Error(error.message || 'Google sign-in failed. Please try again.')
     }
   },
@@ -133,7 +133,7 @@ export const authService = {
   // Login user with email and password
   async login(email: string, password: string): Promise<FirebaseUser> {
     const { auth } = getServices()
-    
+
     const { user } = await signInWithEmailAndPassword(auth, email, password)
     return user
   },
@@ -141,19 +141,19 @@ export const authService = {
   // Logout user
   async logout(): Promise<void> {
     const { auth } = getServices()
-    
+
     await signOut(auth)
   },
 
   // Get user data from Firestore
   async getUserData(uid: string): Promise<User | null> {
     const { db } = getServices()
-    
+
     const userDocRef = doc(db, USERS_COLLECTION, uid)
     const userDocSnap = await getDoc(userDocRef)
 
     if (!userDocSnap.exists()) return null
-    
+
     const data = userDocSnap.data()
     // some user docs may have photoURL property from Google signup,
     // normalize to profilePhoto field matching our User type
@@ -167,17 +167,44 @@ export const authService = {
     } as User
   },
 
+  // Get multiple users by IDs
+  async getUsersByIds(uids: string[]): Promise<User[]> {
+    if (!uids || uids.length === 0) return []
+    const { db } = getServices()
+
+    // Firestore 'in' query supports up to 30 elements
+    const batches = []
+    for (let i = 0; i < uids.length; i += 30) {
+      batches.push(uids.slice(i, i + 30))
+    }
+
+    const results: User[] = []
+    for (const batch of batches) {
+      const q = query(collection(db, USERS_COLLECTION), where('__name__', 'in', batch))
+      const querySnapshot = await getDocs(q)
+      querySnapshot.forEach((doc) => {
+        const data = doc.data()
+        if (data.photoURL && !data.profilePhoto) {
+          data.profilePhoto = data.photoURL
+        }
+        results.push({ id: doc.id, ...data } as User)
+      })
+    }
+
+    return results
+  },
+
   // Subscribe to auth changes
   onAuthStateChanged(callback: (user: FirebaseUser | null) => void) {
     const { auth } = getServices()
-    
+
     return onAuthStateChanged(auth, callback)
   },
 
   // Get current user
   getCurrentUser(): FirebaseUser | null {
     const { auth } = getServices()
-    
+
     return auth.currentUser
   },
 
@@ -213,17 +240,18 @@ export const authService = {
 
     const { auth } = getServices()
     console.log('🎭 Demo login with:', demoAccount.email)
-    
+
     try {
       const { user } = await signInWithEmailAndPassword(auth, demoAccount.email, demoAccount.password)
       console.log('✅ Demo login successful:', user.email)
       return user
     } catch (error: any) {
       console.error('🎭 Demo login error code:', error.code)
-      
+
       // If demo account doesn't exist, provide helpful error
       // Note: Firebase returns auth/invalid-credential for both user-not-found and wrong-password for security
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+      const errCode = error.code || ''
+      if (errCode === 'auth/user-not-found' || errCode === 'auth/invalid-credential' || error.message?.includes('invalid-credential')) {
         console.warn('⚠️ Demo account not found in Firebase')
         console.warn('Email:', demoAccount.email)
         console.warn('This means the demo accounts haven\'t been created yet.')

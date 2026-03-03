@@ -2,6 +2,20 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import { useRequireRole } from '@/hooks/useRequireRole'
+import { calculateGPA } from '@/lib/gradeConversion'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+import { Line } from 'react-chartjs-2'
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 declare global {
   function html2pdf(): any
@@ -122,7 +136,7 @@ const studentGradesData: YearData[] = [
 ]
 
 export default function StudentSemestralGradesPage() {
-  const allowed = useRequireRole(['student','admin'])
+  const allowed = useRequireRole(['student', 'admin'])
 
   // hooks must run every render before we decide to exit
   const contentRef = useRef<HTMLDivElement>(null)
@@ -144,15 +158,11 @@ export default function StudentSemestralGradesPage() {
     return <div>Checking permissions…</div>
   }
 
-  const calculateSemesterGPA = (courses: Course[]) => {
-    const totalPoints = courses.reduce((sum, course) => sum + (course.grade * course.units), 0)
-    const totalUnits = courses.reduce((sum, course) => sum + course.units, 0)
-    return totalUnits > 0 ? (totalPoints / totalUnits).toFixed(2) : '0.00'
-  }
-
-  const calculateYearGPA = (semesters: Semester[]) => {
+  // Uses robust calculation handling 4.0 or 1.0 logic directly imported
+  const calculateSemesterGPAStr = (courses: Course[]) => calculateGPA(courses, '1.0').toFixed(2)
+  const calculateYearGPAStr = (semesters: Semester[]) => {
     const allCourses = semesters.flatMap(s => s.courses)
-    return calculateSemesterGPA(allCourses)
+    return calculateGPA(allCourses, '1.0').toFixed(2)
   }
 
   const getTotalCredits = () => {
@@ -177,14 +187,35 @@ export default function StudentSemestralGradesPage() {
     }, 0)
   }
 
+  // --- Chart.js Data Logic ---
+  const extractChartData = () => {
+    // Array of string labels e.g. "Y1", "Y2"
+    const labels = studentGradesData.map(y => `Year ${y.year}`)
+    // Calculates total GPA accurately using our internal function mappings
+    const numericGPAs = studentGradesData.map(y => calculateGPA(y.semesters.flatMap(s => s.courses), '1.0'))
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Overall Yearly GPA Trend (Ph 1.0 Scale)',
+          data: numericGPAs,
+          borderColor: 'rgb(79, 70, 229)', // indigo-600
+          backgroundColor: 'rgba(79, 70, 229, 0.15)',
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(59, 130, 246)', // blue-500
+          pointHoverRadius: 7,
+          pointRadius: 5,
+          fill: true
+        }
+      ]
+    }
+  }
+
   const downloadPDF = async () => {
     if (!contentRef.current) return
 
     try {
-      // lazily import the pdf library only when needed.  moving this
-      // inside the click handler prevents any errant code from executing
-      // during render and also keeps the bundle smaller for users who
-      // never download.
       const module = await import('html2pdf.js')
       const html2pdf = module.default
 
@@ -210,9 +241,10 @@ export default function StudentSemestralGradesPage() {
     }
   }
 
-  const overallGPA = calculateYearGPA(
-    studentGradesData.flatMap(y => y.semesters)
-  )
+  const overallGPA = calculateGPA(
+    studentGradesData.flatMap(y => y.semesters).flatMap(s => s.courses),
+    '1.0'
+  ).toFixed(2)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pb-12">
@@ -226,7 +258,7 @@ export default function StudentSemestralGradesPage() {
             </div>
             <button
               onClick={downloadPDF}
-              disabled={typeof html2pdf === 'undefined'}
+              disabled={typeof window !== 'undefined' && typeof window.html2pdf === 'undefined'}
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -240,26 +272,103 @@ export default function StudentSemestralGradesPage() {
 
       {/* Summary Cards */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <p className="text-blue-600 text-sm font-medium">Overall GPA</p>
-            <p className="text-3xl font-bold text-blue-700 mt-2">{overallGPA}</p>
-            <p className="text-xs text-gray-500 mt-2">Out of 4.0</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Overall GPA Card */}
+          <div className="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-6 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500 rounded-l-2xl"></div>
+            <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Overall GPA</p>
+            <p className="text-4xl font-extrabold text-blue-700 tracking-tight mt-1">{overallGPA}</p>
+            <p className="text-xs text-gray-500 mt-2 font-medium">Out of 4.0 Scale</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <p className="text-green-600 text-sm font-medium">Total Credits</p>
-            <p className="text-3xl font-bold text-green-700 mt-2">{getTotalCredits()}</p>
-            <p className="text-xs text-gray-500 mt-2">Units Earned</p>
+
+          {/* Total Credits Card */}
+          <div className="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-6 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-green-500 rounded-l-2xl"></div>
+            <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Credits</p>
+            <p className="text-4xl font-extrabold text-green-700 tracking-tight mt-1">{getTotalCredits()}</p>
+            <p className="text-xs text-gray-500 mt-2 font-medium">Units Earned</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-            <p className="text-purple-600 text-sm font-medium">Grades Posted</p>
-            <p className="text-3xl font-bold text-purple-700 mt-2">{getTotalPublished()}/{getTotalCourses()}</p>
-            <p className="text-xs text-gray-500 mt-2">Published Grades</p>
+
+          {/* Grades Posted Card with Progress Bar */}
+          <div className="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-6 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500 rounded-l-2xl"></div>
+            <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Grades Posted</p>
+            <p className="text-4xl font-extrabold text-gray-900 tracking-tight mt-1">{getTotalPublished()}<span className="text-lg text-gray-400 font-medium ml-1">/{getTotalCourses()}</span></p>
+            <div className="w-full bg-gray-100 rounded-full h-2 mt-3 mb-1 overflow-hidden">
+              <div
+                className="bg-purple-600 h-2 rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${(getTotalPublished() / getTotalCourses()) * 100}%` }}
+              ></div>
+            </div>
+            <p className="text-[10px] text-gray-500 font-medium">Published Grades Progress</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
-            <p className="text-orange-600 text-sm font-medium">Status</p>
-            <p className="text-3xl font-bold text-orange-700 mt-2">Active</p>
-            <p className="text-xs text-gray-500 mt-2">Current Status</p>
+
+          {/* Status Card */}
+          <div className="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-6 transition-all duration-300 relative overflow-hidden group flex flex-col justify-center items-start">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-orange-500 rounded-l-2xl"></div>
+            <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Academic Status</p>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse"></div>
+              <p className="text-2xl font-bold text-orange-700">Active</p>
+            </div>
+            <p className="text-xs text-gray-500 mt-3 font-medium">Currently Enrolled</p>
+          </div>
+        </div>
+
+        {/* GPA Trend Chart */}
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-6 mb-8 transition-all duration-300">
+          <div className="mb-4 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">Academic Progression</h2>
+              <p className="text-sm text-gray-500">GPA Trend Across College Career (1.0 - Highest)</p>
+            </div>
+          </div>
+          <div className="w-full h-80 relative">
+            {typeof window !== 'undefined' ? (
+              <Line
+                data={extractChartData()}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: {
+                      reverse: true, // 1.0 is better than 4.0 in Philippines
+                      min: 1.0,
+                      max: 4.0,
+                      ticks: {
+                        stepSize: 0.5
+                      },
+                      title: {
+                        display: true,
+                        text: 'Weighted GPA'
+                      }
+                    }
+                  },
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                      labels: {
+                        font: {
+                          family: "'Inter', sans-serif",
+                          size: 13
+                        }
+                      }
+                    },
+                    tooltip: {
+                      backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                      padding: 12,
+                      titleFont: { size: 14, family: "'Inter', sans-serif" },
+                      bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                      cornerRadius: 8
+                    }
+                  }
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-xl">
+                <p className="text-gray-400">Loading chart...</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -281,7 +390,7 @@ export default function StudentSemestralGradesPage() {
                     Year {yearData.year}
                   </h2>
                   <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
-                    GPA: {calculateYearGPA(yearData.semesters)}
+                    GPA: {calculateYearGPAStr(yearData.semesters)}
                   </span>
                 </div>
                 <svg
@@ -303,7 +412,7 @@ export default function StudentSemestralGradesPage() {
                       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                         <h3 className="text-lg font-semibold text-gray-700">{semester.name}</h3>
                         <span className="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded">
-                          GPA: {calculateSemesterGPA(semester.courses)}
+                          GPA: {calculateSemesterGPAStr(semester.courses)}
                         </span>
                       </div>
 
@@ -335,11 +444,10 @@ export default function StudentSemestralGradesPage() {
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-600">{course.remarks}</td>
                                 <td className="px-4 py-3 text-sm">
-                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                                    course.status === 'published'
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-yellow-100 text-yellow-800'
-                                  }`}>
+                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${course.status === 'published'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                    }`}>
                                     {course.status === 'published' ? 'Published' : 'Pending'}
                                   </span>
                                 </td>
@@ -355,7 +463,7 @@ export default function StudentSemestralGradesPage() {
                           Total Units: <span className="font-semibold">{semester.courses.reduce((sum, c) => sum + c.units, 0)}</span>
                         </span>
                         <span className="text-gray-700">
-                          Semester GPA: <span className="font-semibold text-indigo-600">{calculateSemesterGPA(semester.courses)}</span>
+                          Semester GPA: <span className="font-semibold text-indigo-600">{calculateSemesterGPAStr(semester.courses)}</span>
                         </span>
                       </div>
                     </div>

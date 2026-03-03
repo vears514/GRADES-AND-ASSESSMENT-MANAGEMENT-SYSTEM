@@ -22,6 +22,9 @@ export interface User {
   enrolledSubjects?: string[]
   semester?: string
   schoolYear?: string
+  gender?: string
+  college?: string
+  program?: string
 
   // faculty-specific
   facultyId?: string

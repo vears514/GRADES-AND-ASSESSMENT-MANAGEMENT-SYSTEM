@@ -181,6 +181,29 @@ export const authService = {
     return auth.currentUser
   },
 
+  // Wait for Firebase to resolve the initial auth state.
+  async waitForAuthState(): Promise<FirebaseUser | null> {
+    const { auth } = getServices()
+
+    if (auth.currentUser) {
+      return auth.currentUser
+    }
+
+    return new Promise((resolve, reject) => {
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          unsubscribe()
+          resolve(user)
+        },
+        (error) => {
+          unsubscribe()
+          reject(error)
+        }
+      )
+    })
+  },
+
   // Demo login for development/testing purposes only
   async loginWithDemo(demoAccount: { email: string; password: string }): Promise<FirebaseUser> {
     // Only allow demo login in development mode

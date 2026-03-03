@@ -7,31 +7,60 @@ import ProfileHeader from '@/components/ProfileHeader'
 import { useRequireRole } from '@/hooks/useRequireRole'
 
 export default function FacultyProfilePage() {
-  const allowed = useRequireRole(['faculty','admin'])
-  if (!allowed) return <div>Checking permissions…</div>
-
+  const allowed = useRequireRole(['faculty', 'admin'])
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (allowed !== true) {
+      return
+    }
+
+    let active = true
+
     const load = async () => {
       try {
-        const authUser = authService.getCurrentUser()
-        if (!authUser) throw new Error('Not authenticated')
+        setLoading(true)
+        setError(null)
+
+        const authUser = await authService.waitForAuthState()
+        if (!authUser) {
+          throw new Error('Not authenticated')
+        }
+
         const profile = await authService.getUserData(authUser.uid)
-        if (!profile) throw new Error('Profile not found')
+        if (!profile) {
+          throw new Error('Profile not found')
+        }
+
+        if (!active) {
+          return
+        }
+
         setUser(profile)
       } catch (err: any) {
-        setError(err.message)
+        if (!active) {
+          return
+        }
+        setError(err.message || 'Failed to load profile')
       } finally {
+        if (!active) {
+          return
+        }
         setLoading(false)
       }
     }
-    load()
-  }, [])
 
-  if (loading) return <div>Loading faculty profile…</div>
+    load()
+
+    return () => {
+      active = false
+    }
+  }, [allowed])
+
+  if (allowed === null) return <div>Checking permissions...</div>
+  if (loading) return <div>Loading faculty profile...</div>
   if (error) return <div className="text-red-600">{error}</div>
 
   const authUser = authService.getCurrentUser()
@@ -51,7 +80,6 @@ export default function FacultyProfilePage() {
         </a>
       </div>
 
-      {/* Basic Info */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Basic Information</h2>
         <ul className="space-y-1">
@@ -63,7 +91,6 @@ export default function FacultyProfilePage() {
         </ul>
       </section>
 
-      {/* Teaching Info */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Teaching Information</h2>
         <ul className="space-y-1">
@@ -73,7 +100,6 @@ export default function FacultyProfilePage() {
         </ul>
       </section>
 
-      {/* Permissions */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Permissions</h2>
         <ul className="space-y-1">
@@ -82,17 +108,15 @@ export default function FacultyProfilePage() {
         </ul>
       </section>
 
-      {/* Account Settings */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Account Settings</h2>
         <ul className="space-y-1">
           <li><strong>Login method:</strong> {user?.authMethod === 'google' ? 'Google' : 'Email'}</li>
-          {/* additional security info could go here */}
         </ul>
       </section>
 
       <button
-        onClick={() => authService.logout().then(() => window.location.href = '/login')}
+        onClick={() => authService.logout().then(() => { window.location.href = '/login' })}
         className="button-secondary"
       >
         Logout

@@ -6,24 +6,6 @@ import { FormEvent, useState } from 'react'
 import { authService } from '@/services/authService'
 import { DEMO_ACCOUNTS, isDemoModeEnabled } from '@/config/demoAccounts'
 
-// determine where to send a user based on their role
-function getPathForRole(role?: string) {
-  // always send to the profile router – it will branch itself
-  // by leaving the role in the URL we also support deep links in future
-  switch (role) {
-    case 'student':
-      return '/dashboard/profile/student'
-    case 'faculty':
-      return '/dashboard/profile/faculty'
-    case 'registrar':
-      return '/dashboard/profile/registrar'
-    case 'admin':
-      return '/dashboard/profile/admin'
-    default:
-      return '/dashboard/profile'
-  }
-}
-
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -47,13 +29,10 @@ export default function LoginPage() {
     }
 
     try {
-      const userCredential = await authService.login(email, password)
+      await authService.login(email, password)
       setSuccess('Login successful! Redirecting...')
-      setTimeout(async () => {
-        // fetch profile for role-based routing
-        const profile = await authService.getUserData(userCredential.uid)
-        const destination = profile ? getPathForRole(profile.role) : '/dashboard'
-        router.push(destination)
+      setTimeout(() => {
+        router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.')
@@ -69,22 +48,13 @@ export default function LoginPage() {
 
     try {
       console.log('Google Sign-In button clicked')
-      const { user, isNewUser } = await authService.signInWithGoogle()
-      console.log('Sign-in successful:', user.email, 'isNewUser:', isNewUser)
+      await authService.signInWithGoogle()
+      console.log('Sign-in successful')
       
       setSuccess('Google sign-in successful! Redirecting...')
-      
-      // If it's a new user, you might want to redirect to complete profile
-      // Otherwise go to dashboard
-      setTimeout(async () => {
-        if (isNewUser) {
-          router.push('/dashboard/profile-setup')
-        } else {
-          // fetch role and route accordingly for existing users
-          const profile = user ? await authService.getUserData(user.uid) : null
-          const destination = profile ? getPathForRole(profile.role) : '/dashboard'
-          router.push(destination)
-        }
+
+      setTimeout(() => {
+        router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
       console.error('Google Sign-In failed:', err)
@@ -117,13 +87,11 @@ export default function LoginPage() {
       const demoAccount = DEMO_ACCOUNTS[role]
       console.log('Demo login attempt for role:', role)
       
-      const userCredential = await authService.loginWithDemo(demoAccount)
+      await authService.loginWithDemo(demoAccount)
       setSuccess(`Demo ${role} login successful! Redirecting...`)
       
-      setTimeout(async () => {
-        // after demo login we already know role by parameter but keep generic
-        const destination = getPathForRole(role)
-        router.push(destination)
+      setTimeout(() => {
+        router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
       console.error('Demo login error:', err)
@@ -311,3 +279,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

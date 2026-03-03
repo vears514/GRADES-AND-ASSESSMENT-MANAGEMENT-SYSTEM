@@ -13,14 +13,11 @@ export default function DashboardLayout({
   const [roleLabel, setRoleLabel] = useState('')
   const [userRole, setUserRole] = useState<string | null>(null)
 
-  // determine label based on logged in user's role
   useEffect(() => {
-    const load = async () => {
-      const authUser = authService.getCurrentUser()
-      if (!authUser) return
-      const profile = await authService.getUserData(authUser.uid)
-      if (!profile) return
-      switch (profile.role) {
+    let active = true
+
+    const applyRole = (role?: string) => {
+      switch (role) {
         case 'student':
           setRoleLabel('Student Portal')
           setUserRole('student')
@@ -42,7 +39,30 @@ export default function DashboardLayout({
           setUserRole(null)
       }
     }
-    load()
+
+    const unsubscribe = authService.onAuthStateChanged(async (authUser) => {
+      if (!active) return
+
+      if (!authUser) {
+        applyRole(undefined)
+        return
+      }
+
+      try {
+        const profile = await authService.getUserData(authUser.uid)
+        if (!active) return
+        applyRole(profile?.role)
+      } catch (error) {
+        console.error('Failed to load dashboard role:', error)
+        if (!active) return
+        applyRole(undefined)
+      }
+    })
+
+    return () => {
+      active = false
+      unsubscribe()
+    }
   }, [])
 
   return (

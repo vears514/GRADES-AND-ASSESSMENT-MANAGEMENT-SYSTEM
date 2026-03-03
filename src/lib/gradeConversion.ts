@@ -141,20 +141,25 @@ export const convertGPAToLetterGrade = (gpa: number): string => {
 }
 
 /**
- * Calculate GPA from array of grades (credits-weighted)
+ * Calculate GPA from array of objects containing grade and units
+ * Handles both 4.0 (US) and 1.0 (Philippine) scales
  */
-export const calculateWeightedGPA = (
-  grades: Array<{ gpa: number; units: number }>
+export const calculateGPA = (
+  grades: Array<{ grade: number; units: number }>,
+  scale: '4.0' | '1.0' = '4.0'
 ): number => {
   if (grades.length === 0) return 0
 
-  const totalWeightedGPA = grades.reduce((sum, grade) => {
-    return sum + grade.gpa * grade.units
-  }, 0)
+  const totalPoints = grades.reduce((sum, item) => sum + item.grade * item.units, 0)
+  const totalUnits = grades.reduce((sum, item) => sum + item.units, 0)
 
-  const totalUnits = grades.reduce((sum, grade) => sum + grade.units, 0)
+  if (totalUnits === 0) return 0
 
-  return totalUnits > 0 ? parseFloat((totalWeightedGPA / totalUnits).toFixed(2)) : 0
+  let gpa = totalPoints / totalUnits
+
+  // On standard mathematical logic, a weighted average formula is identical regardless of scale.
+  // However, we format it cleanly. Philippine scale has lowest passing of 3.0 and highest of 1.0.
+  return parseFloat(gpa.toFixed(2))
 }
 
 /**

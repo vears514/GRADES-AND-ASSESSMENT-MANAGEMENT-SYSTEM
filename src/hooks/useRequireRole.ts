@@ -15,36 +15,45 @@ import { UserRole } from '@/types'
  */
 export function useRequireRole(roles: UserRole[]) {
   const router = useRouter()
-  // null = still checking, true = allowed (never returns false because we
-  // redirect immediately on failure)
   const [allowed, setAllowed] = useState<boolean | null>(null)
+  const rolesKey = roles.join('|')
 
   useEffect(() => {
-    let firstCall = true
+    let active = true
+    setAllowed(null)
 
-    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser) => {
-      if (firstCall) {
-        firstCall = false
+    const checkAccess = async () => {
+      try {
+        const firebaseUser = await authService.waitForAuthState()
+        if (!active) return
+
         if (!firebaseUser) {
-          return // wait for real event
+          router.replace('/login')
+          return
         }
-      }
 
-      if (!firebaseUser) {
+        const profile = await authService.getUserData(firebaseUser.uid)
+        if (!active) return
+
+        if (!profile || !roles.includes(profile.role as UserRole)) {
+          router.replace('/unauthorized')
+          return
+        }
+
+        setAllowed(true)
+      } catch (error) {
+        if (!active) return
+        console.error('Role check failed:', error)
         router.replace('/login')
-        return
       }
+    }
 
-      const profile = await authService.getUserData(firebaseUser.uid)
-      if (!profile || !roles.includes(profile.role as UserRole)) {
-        router.replace('/unauthorized')
-        return
-      }
-      setAllowed(true)
-    })
+    checkAccess()
 
-    return () => unsubscribe()
-  }, [roles, router])
+    return () => {
+      active = false
+    }
+  }, [rolesKey, router])
 
   return allowed
 }

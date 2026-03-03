@@ -7,32 +7,60 @@ import ProfileHeader from '@/components/ProfileHeader'
 import { useRequireRole } from '@/hooks/useRequireRole'
 
 export default function StudentProfilePage() {
-  const allowed = useRequireRole(['student','admin'])
-
+  const allowed = useRequireRole(['student', 'admin'])
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (allowed !== true) {
+      return
+    }
+
+    let active = true
+
     const load = async () => {
       try {
-        const authUser = authService.getCurrentUser()
-        if (!authUser) throw new Error('Not authenticated')
+        setLoading(true)
+        setError(null)
+
+        const authUser = await authService.waitForAuthState()
+        if (!authUser) {
+          throw new Error('Not authenticated')
+        }
+
         const profile = await authService.getUserData(authUser.uid)
-        if (!profile) throw new Error('Profile not found')
+        if (!profile) {
+          throw new Error('Profile not found')
+        }
+
+        if (!active) {
+          return
+        }
+
         setUser(profile)
       } catch (err: any) {
-        setError(err.message)
+        if (!active) {
+          return
+        }
+        setError(err.message || 'Failed to load profile')
       } finally {
+        if (!active) {
+          return
+        }
         setLoading(false)
       }
     }
+
     load()
-  }, [])
 
-  if (!allowed) return <div>Checking permissions…</div>
+    return () => {
+      active = false
+    }
+  }, [allowed])
 
-  if (loading) return <div>Loading student profile…</div>
+  if (allowed === null) return <div>Checking permissions...</div>
+  if (loading) return <div>Loading student profile...</div>
   if (error) return <div className="text-red-600">{error}</div>
 
   const authUser = authService.getCurrentUser()
@@ -52,7 +80,6 @@ export default function StudentProfilePage() {
         </a>
       </div>
 
-      {/* Basic Info */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Basic Information</h2>
         <ul className="space-y-1">
@@ -64,7 +91,6 @@ export default function StudentProfilePage() {
         </ul>
       </section>
 
-      {/* Academic Info */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Academic Information</h2>
         <ul className="space-y-1">
@@ -75,7 +101,6 @@ export default function StudentProfilePage() {
         </ul>
       </section>
 
-      {/* Grades Overview */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Grades Overview</h2>
         <ul className="space-y-1">
@@ -85,7 +110,6 @@ export default function StudentProfilePage() {
         </ul>
       </section>
 
-      {/* Account Settings */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Account Settings</h2>
         <ul className="space-y-1">
@@ -97,7 +121,7 @@ export default function StudentProfilePage() {
       </section>
 
       <button
-        onClick={() => authService.logout().then(() => window.location.href = '/login')}
+        onClick={() => authService.logout().then(() => { window.location.href = '/login' })}
         className="button-secondary"
       >
         Logout

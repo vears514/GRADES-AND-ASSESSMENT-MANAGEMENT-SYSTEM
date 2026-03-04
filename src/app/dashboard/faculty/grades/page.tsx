@@ -293,9 +293,9 @@ export default function FacultyGradesPage() {
                       <td className="px-6 py-4">
                         <div className="flex justify-center">
                           <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${grade?.status === 'approved' ? 'bg-green-100 text-green-700' :
-                              grade?.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                                grade?.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-gray-100 text-gray-500'
+                            grade?.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
+                              grade?.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-500'
                             }`}>
                             {grade?.status ?? 'Unassigned'}
                           </span>

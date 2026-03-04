@@ -20,7 +20,10 @@ const getServices = () => {
   const auth = getAuth_()
   const db = getDb()
   if (!auth || !db) {
-    throw new Error('Firebase services not initialized. Please check your configuration.')
+    throw new Error(
+      'Firebase services not initialized. Please check your configuration.\n' +
+      'If you recently added or changed your .env.local file, you MUST restart your Next.js development server (npm run dev) for the changes to take effect.'
+    )
   }
   return { auth, db }
 }

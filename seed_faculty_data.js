@@ -36,19 +36,14 @@ async function seedFacultyData() {
 
         console.log(`\nUsing user: ${targetUserId} (${targetUserName})`);
 
-        // 2. Set user role to faculty
-        console.log('\nSetting user role to faculty...');
-        await db.collection('users').doc(targetUserId).set({
-            role: 'faculty',
-            department: 'Computer Science',
-            updatedAt: new Date()
-        }, { merge: true });
+        // 2. Keep existing user role intact to avoid accidental role corruption.
+        console.log('\nPreserving current role for target user (no role overwrite).');
 
         // 3. Create sample students
         console.log('Creating sample students...');
         const sampleStudents = [
             { id: 'STU-001', firstName: 'Juan', lastName: 'Dela Cruz', studentId: '22016501', email: 'juan.delacruz@student.edu' },
-            { id: 'STU-002', firstName: 'Maria', lastName: 'Santos', studentId: '22016502', email: 'maria.santos@student.edu' },
+            { id: 'STU-002', firstName: 'JOHNDAVE', lastName: 'Santos', studentId: '22016502', email: 'johndave.santos@student.edu' },
             { id: 'STU-003', firstName: 'Jose', lastName: 'Rizal', studentId: '22016503', email: 'jose.rizal@student.edu' },
             { id: 'STU-004', firstName: 'Andrea', lastName: 'Bonifacio', studentId: '22016504', email: 'andrea.bonifacio@student.edu' },
             { id: 'STU-005', firstName: 'Carlos', lastName: 'Garcia', studentId: '22016505', email: 'carlos.garcia@student.edu' },
@@ -70,6 +65,7 @@ async function seedFacultyData() {
         }
 
         const studentIds = sampleStudents.map(s => s.id);
+        const johnDaveStudent = sampleStudents.find((student) => student.firstName === 'JOHNDAVE');
 
         // 4. Create courses with the target user as instructor
         console.log('\nCreating courses...');
@@ -110,10 +106,26 @@ async function seedFacultyData() {
                     academicYear: '2025-2026'
                 }, { merge: true });
             }
+
+            // 6. Pre-seed one visible grade for JOHNDAVE in CS101.
+            if (johnDaveStudent && course.id === 'FACULTY-CS101') {
+                await db.collection('grades').doc(`${johnDaveStudent.id}_${course.id}`).set({
+                    id: `${johnDaveStudent.id}_${course.id}`,
+                    courseId: course.id,
+                    studentId: johnDaveStudent.studentId,
+                    score: 88,
+                    letterGrade: 'B+',
+                    remarks: 'Passed',
+                    status: 'draft',
+                    submittedBy: targetUserId,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }, { merge: true });
+            }
         }
 
         console.log('\n✅ DONE! Faculty grade entry data seeded successfully.');
-        console.log('   • User role set to "faculty"');
+        console.log('   • Target user role preserved (no overwrite)');
         console.log('   • 3 courses created (CS101, CS201, CS301)');
         console.log('   • 5 students enrolled in each course');
         console.log('\n   Refresh the page and go to Faculty > Grade Entry to encode grades!');
@@ -126,3 +138,4 @@ async function seedFacultyData() {
 }
 
 seedFacultyData();
+

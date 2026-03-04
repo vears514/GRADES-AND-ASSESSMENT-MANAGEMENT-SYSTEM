@@ -1,0 +1,39 @@
+query ListAssignmentsForCurrentUser @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  assignments(where: { studentId: { eq_expr: "auth.uid" } }) {
+    id
+    title
+    description
+    dueDate
+    status
+  }
+}
+
+mutation CreateAssignment($title: String!, $description: String, $dueDate: Timestamp!) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  assignment_insert(data: {
+    title: $title,
+    description: $description,
+    dueDate: $dueDate,
+    studentId_expr: "auth.uid"
+  }) {
+    id
+  }
+}
+
+mutation UpdateAssignmentStatus($id: UUID!, $status: String!) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  assignment_update(key: { id: $id }, data: {
+    status: $status
+  }) {
+    id
+  }
+}
+
+query GetCourseDetailsPublic($courseId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  course(key: { id: $courseId }) {
+    id
+    name
+    description
+    instructor {
+      displayName
+    }
+  }
+}

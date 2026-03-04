@@ -1,0 +1,214 @@
+extend type Query {
+  """
+  ✨ Look up a single `Author` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  author(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Author_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Author_FirstRow
+  ): Author @fdc_generated(from: "Author", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Book` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  book(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Book_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Book_FirstRow
+  ): Book @fdc_generated(from: "Book", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Borrowing` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  borrowing(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Borrowing_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Borrowing_FirstRow
+  ): Borrowing @fdc_generated(from: "Borrowing", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Member` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  member(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Member_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Member_FirstRow
+  ): Member @fdc_generated(from: "Member", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Author` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  authors(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Author_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Author_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Author_Having
+  ): [Author!]! @fdc_generated(from: "Author", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Book` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  books(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Book_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Book_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Book_Having
+  ): [Book!]! @fdc_generated(from: "Book", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Borrowing` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  borrowings(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Borrowing_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Borrowing_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Borrowing_Having
+  ): [Borrowing!]! @fdc_generated(from: "Borrowing", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Member` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  members(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Member_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Member_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Member_Having
+  ): [Member!]! @fdc_generated(from: "Member", purpose: QUERY_MULTIPLE)
+}

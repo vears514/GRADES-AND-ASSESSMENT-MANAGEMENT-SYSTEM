@@ -6,7 +6,6 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   GoogleAuthProvider,
-  updateProfile,
 } from 'firebase/auth'
 import { collection, addDoc, query, where, getDocs, Timestamp, getDoc, doc, setDoc } from 'firebase/firestore'
 import { getAuth_, getDb } from '@/lib/firebase'
@@ -14,6 +13,15 @@ import { User } from '@/types'
 
 const USERS_COLLECTION = 'users'
 const googleProvider = new GoogleAuthProvider()
+let googlePopupInFlight: Promise<{ user: FirebaseUser; isNewUser: boolean }> | null = null
+
+const withAuthCode = (error: any, fallbackMessage: string) => {
+  const normalized = new Error(error?.message || fallbackMessage) as Error & { code?: string }
+  if (error?.code) {
+    normalized.code = error.code
+  }
+  return normalized
+}
 
 // Helper to safely get auth and db instances
 const getServices = () => {
@@ -58,6 +66,11 @@ export const authService = {
 
   // Google Sign-Up/Sign-In
   async signInWithGoogle(): Promise<{ user: FirebaseUser; isNewUser: boolean }> {
+    if (googlePopupInFlight) {
+      return googlePopupInFlight
+    }
+
+    googlePopupInFlight = (async () => {
     try {
       const { auth, db } = getServices()
 
@@ -116,21 +129,32 @@ export const authService = {
     } catch (error: any) {
       console.error('Google Sign-In error:', error.code, error.message)
 
+      if (error.code === 'auth/missing-or-invalid-nonce') {
+        throw withAuthCode(
+          error,
+          'Google sign-in session became invalid. Please try again and avoid multiple clicks.'
+        )
+      }
       if (error.code === 'auth/popup-blocked') {
-        throw new Error('Sign-in popup was blocked by your browser. Please allow popups and try again.')
+        throw withAuthCode(error, 'Sign-in popup was blocked by your browser. Please allow popups and try again.')
       }
       if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Sign-in was cancelled. Please try again.')
+        throw withAuthCode(error, 'Sign-in was cancelled. Please try again.')
       }
       if (error.code === 'auth/cancelled-popup-request') {
-        throw new Error('Sign-in was cancelled. Please try again.')
+        throw withAuthCode(error, 'Sign-in was cancelled. Please try again.')
       }
       if (error.code === 'auth/network-request-failed') {
-        throw new Error('Network error. Please check your internet connection and try again.')
+        throw withAuthCode(error, 'Network error. Please check your internet connection and try again.')
       }
 
-      throw new Error(error.message || 'Google sign-in failed. Please try again.')
+      throw withAuthCode(error, 'Google sign-in failed. Please try again.')
+    } finally {
+      googlePopupInFlight = null
     }
+    })()
+
+    return googlePopupInFlight
   },
 
   // Login user with email and password
@@ -195,6 +219,37 @@ export const authService = {
     }
 
     return results
+  },
+
+  // Get multiple users by studentId field
+  async getUsersByStudentIds(studentIds: string[]): Promise<User[]> {
+    if (!studentIds || studentIds.length === 0) return []
+    const { db } = getServices()
+
+    const normalized = Array.from(
+      new Set(studentIds.map((id) => id?.trim()).filter(Boolean))
+    ) as string[]
+
+    // Firestore 'in' query supports up to 30 elements
+    const batches = []
+    for (let i = 0; i < normalized.length; i += 30) {
+      batches.push(normalized.slice(i, i + 30))
+    }
+
+    const resultsMap = new Map<string, User>()
+    for (const batch of batches) {
+      const q = query(collection(db, USERS_COLLECTION), where('studentId', 'in', batch))
+      const querySnapshot = await getDocs(q)
+      querySnapshot.forEach((doc) => {
+        const data = doc.data()
+        if (data.photoURL && !data.profilePhoto) {
+          data.profilePhoto = data.photoURL
+        }
+        resultsMap.set(doc.id, { id: doc.id, ...data } as User)
+      })
+    }
+
+    return Array.from(resultsMap.values())
   },
 
   // Subscribe to auth changes

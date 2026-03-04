@@ -26,9 +26,15 @@ export default function CurriculumViewer() {
 
   // Load html2pdf only on client side
   useEffect(() => {
+    let active = true;
     import('html2pdf.js').then((module) => {
+      if (!active) return;
       setHtml2pdf(() => module.default);
     });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const calculateGPA = (semester: any) => {

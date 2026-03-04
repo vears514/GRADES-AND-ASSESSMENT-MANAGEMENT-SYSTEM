@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { authService } from '@/services/authService'
 import { UserRole } from '@/types'
 
@@ -22,6 +22,23 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const isMountedRef = useRef(false)
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearRedirectTimer = () => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current)
+      redirectTimerRef.current = null
+    }
+  }
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      clearRedirectTimer()
+    }
+  }, [])
 
   const passwordStrength = {
     weak: formData.password.length < 8,
@@ -83,38 +100,51 @@ export default function RegisterPage() {
         role: formData.role as UserRole,
         department: formData.department,
       })
-      
+      if (!isMountedRef.current) return
+
       setSuccess('Account created successfully! Redirecting to login...')
-      setTimeout(() => {
+      clearRedirectTimer()
+      redirectTimerRef.current = setTimeout(() => {
         router.push('/login')
       }, 1500)
     } catch (err: any) {
+      if (!isMountedRef.current) return
       setError(err.message || 'Registration failed. Please try again.')
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 
   const handleGoogleSignUp = async () => {
+    if (loading) return
     setError('')
     setLoading(true)
 
     try {
-      const { user, isNewUser } = await authService.signInWithGoogle()
+      await authService.signInWithGoogle()
+      if (!isMountedRef.current) return
       setSuccess('Google sign-up successful! Redirecting...')
-      
-      setTimeout(() => {
+
+      clearRedirectTimer()
+      redirectTimerRef.current = setTimeout(() => {
         // Redirect to dashboard for new users to complete their profile if needed
         router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
-      if (err.message === 'Sign-in was cancelled') {
+      if (!isMountedRef.current) return
+      if (err.code === 'auth/missing-or-invalid-nonce') {
+        setError('Google sign-up session expired or was duplicated. Please click once and try again.')
+      } else if (err.message === 'Sign-in was cancelled') {
         setError('Sign-up was cancelled. Please try again.')
       } else {
         setError(err.message || 'Google sign-up failed. Please try again.')
       }
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 

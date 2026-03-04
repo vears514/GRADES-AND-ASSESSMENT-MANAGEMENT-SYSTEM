@@ -21,6 +21,7 @@ export default function SeedDataPage() {
             }
 
             const db = getDb()
+            const profile = await authService.getUserData(authUser.uid)
             const studentId = 'S001'
 
             const coursesToSeed = [
@@ -93,11 +94,11 @@ export default function SeedDataPage() {
             const studentRef = doc(db, 'users', authUser.uid)
             await setDoc(studentRef, {
                 uid: authUser.uid,
-                studentId: studentId,
-                role: 'student',
-                firstName: 'Student',
-                lastName: 'Test',
-                createdAt: Timestamp.now(),
+                studentId: profile?.studentId || studentId,
+                firstName: profile?.firstName || 'Student',
+                lastName: profile?.lastName || 'Test',
+                email: profile?.email || authUser.email || '',
+                department: profile?.department || 'Computer Science',
                 updatedAt: Timestamp.now()
             }, { merge: true })
 
@@ -123,25 +124,23 @@ export default function SeedDataPage() {
 
             const db = getDb()
             const facultyId = authUser.uid
-            const facultyName = authUser.displayName || 'Faculty User'
+            const profile = await authService.getUserData(facultyId)
 
-            // 1. Set current user as faculty
-            const userRef = doc(db, 'users', facultyId)
-            await setDoc(userRef, {
-                uid: facultyId,
-                email: authUser.email,
-                firstName: facultyName.split(' ')[0] || 'Faculty',
-                lastName: facultyName.split(' ').slice(1).join(' ') || 'User',
-                role: 'faculty',
-                department: 'Computer Science',
-                createdAt: Timestamp.now(),
-                updatedAt: Timestamp.now()
-            }, { merge: true })
+            if (!profile || (profile.role !== 'faculty' && profile.role !== 'admin')) {
+                setStatus(
+                    'Current account is not faculty/admin. For safety, this seed no longer changes user roles.\n' +
+                    'Log in with a faculty/admin account, then run Seed Faculty Data again.'
+                )
+                setLoading(false)
+                return
+            }
+
+            const facultyName = authUser.displayName || `${profile.firstName || 'Faculty'} ${profile.lastName || 'User'}`
 
             // 2. Create sample students
             const sampleStudents = [
                 { id: 'STU-001', firstName: 'Juan', lastName: 'Dela Cruz', studentId: '22016501', email: 'juan.delacruz@student.edu' },
-                { id: 'STU-002', firstName: 'Maria', lastName: 'Santos', studentId: '22016502', email: 'maria.santos@student.edu' },
+                { id: 'STU-002', firstName: 'JOHNDAVE', lastName: 'Santos', studentId: '22016502', email: 'johndave.santos@student.edu' },
                 { id: 'STU-003', firstName: 'Jose', lastName: 'Rizal', studentId: '22016503', email: 'jose.rizal@student.edu' },
                 { id: 'STU-004', firstName: 'Andrea', lastName: 'Bonifacio', studentId: '22016504', email: 'andrea.bonifacio@student.edu' },
                 { id: 'STU-005', firstName: 'Carlos', lastName: 'Garcia', studentId: '22016505', email: 'carlos.garcia@student.edu' },
@@ -163,6 +162,7 @@ export default function SeedDataPage() {
             }
 
             const studentIds = sampleStudents.map(s => s.id)
+            const johnDaveStudent = sampleStudents.find(student => student.firstName === 'JOHNDAVE')
 
             // 3. Create courses with the current user as instructor
             const coursesToSeed = [
@@ -203,14 +203,31 @@ export default function SeedDataPage() {
                         academicYear: '2025-2026'
                     }, { merge: true })
                 }
+
+                // 5. Pre-seed an initial grade so one row is not empty in faculty grade entry.
+                if (johnDaveStudent && course.id === 'FACULTY-CS101') {
+                    const gradeRef = doc(db, 'grades', `${johnDaveStudent.id}_${course.id}`)
+                    await setDoc(gradeRef, {
+                        id: `${johnDaveStudent.id}_${course.id}`,
+                        courseId: course.id,
+                        studentId: johnDaveStudent.studentId,
+                        score: 88,
+                        letterGrade: 'B+',
+                        remarks: 'Passed',
+                        status: 'draft',
+                        submittedBy: facultyId,
+                        createdAt: Timestamp.now(),
+                        updatedAt: Timestamp.now(),
+                    }, { merge: true })
+                }
             }
 
             setStatus(
-                `✅ Faculty grade entry data seeded!\n` +
-                `• Your role is now set to "faculty"\n` +
-                `• 3 courses created (CS101, CS201, CS301)\n` +
-                `• 5 students enrolled in each course\n\n` +
-                `Go to Faculty > Grade Entry to start encoding grades!`
+                `Faculty grade entry data seeded!\n` +
+                `- 3 courses created (CS101, CS201, CS301)\n` +
+                `- 5 students enrolled in each course\n` +
+                `- JOHNDAVE Santos has an initial grade in CS101\n\n` +
+                `Go to Faculty > Grade Entry to continue encoding grades.`
             )
         } catch (e: any) {
             console.error(e)
@@ -231,7 +248,7 @@ export default function SeedDataPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <h2 className="text-lg font-bold text-indigo-700 mb-2">🎓 Faculty Grade Entry</h2>
                         <p className="text-sm text-gray-600 mb-4">
-                            Sets your role to <strong>faculty</strong>, creates 3 courses (CS101, CS201, CS301) with you as the instructor, and enrolls 5 sample students in each course. After seeding, go to <strong>Faculty → Grade Entry</strong> to encode grades.
+                            Creates 3 courses (CS101, CS201, CS301) with your account as instructor and enrolls 5 sample students. This action does <strong>not</strong> change your role anymore. After seeding, go to <strong>Faculty &gt; Grade Entry</strong> to encode grades.
                         </p>
                         <button
                             onClick={handleSeedFacultyGradeEntry}
@@ -268,3 +285,5 @@ export default function SeedDataPage() {
         </div>
     )
 }
+
+

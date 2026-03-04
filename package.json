@@ -20,7 +20,8 @@
     "setup-firebase": "node scripts/setupFirebase.js",
     "setup-service-account": "node scripts/setupServiceAccount.js",
     "seed-db": "node scripts/seedDatabase.js",
-    "set-role": "node scripts/setCustomClaims.js"
+    "set-role": "node scripts/setCustomClaims.js",
+    "fix-roles": "node scripts/fixRolesByEmail.js"
   },
   "dependencies": {
     "axios": "^1.6.2",

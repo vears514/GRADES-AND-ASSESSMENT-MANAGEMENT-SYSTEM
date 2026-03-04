@@ -7,7 +7,6 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
   Timestamp,
 } from 'firebase/firestore'
 import { getDb } from '@/lib/firebase'
@@ -21,16 +20,23 @@ const getDatabase = () => {
   return db
 }
 
+const stripUndefined = <T extends Record<string, any>>(data: T): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  ) as Partial<T>
+}
+
 export const gradeService = {
   // Create a new grade
   async createGrade(data: Partial<Grade>): Promise<Grade> {
     const db = getDatabase()
     const gradesRef = collection(db, GRADES_COLLECTION)
-    const docRef = await addDoc(gradesRef, {
+    const payload = stripUndefined({
       ...data,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     })
+    const docRef = await addDoc(gradesRef, payload)
     return {
       ...data,
       id: docRef.id,
@@ -40,18 +46,28 @@ export const gradeService = {
   },
 
   // Get grades for a course
-  async getGradesByCourse(courseId: string): Promise<Grade[]> {
+  async getGradesByCourse(courseId: string, aliases: string[] = []): Promise<Grade[]> {
     const db = getDatabase()
-    const q = query(
-      collection(db, GRADES_COLLECTION),
-      where('courseId', '==', courseId)
+    const courseIdentifiers = Array.from(
+      new Set([courseId, ...aliases].filter(Boolean))
     )
-    const querySnapshot = await getDocs(q)
-    return querySnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Grade))
+    const gradeMap = new Map<string, Grade>()
+
+    for (const identifier of courseIdentifiers) {
+      const q = query(
+        collection(db, GRADES_COLLECTION),
+        where('courseId', '==', identifier)
+      )
+      const querySnapshot = await getDocs(q)
+      querySnapshot.docs.forEach((docSnap) => {
+        gradeMap.set(docSnap.id, {
+          id: docSnap.id,
+          ...docSnap.data(),
+        } as Grade)
+      })
+    }
+
+    return Array.from(gradeMap.values())
       .sort((a, b) => {
         const timeA = (a.updatedAt as any)?.toMillis?.() || 0
         const timeB = (b.updatedAt as any)?.toMillis?.() || 0
@@ -60,18 +76,28 @@ export const gradeService = {
   },
 
   // Get grades for a student
-  async getGradesByStudent(studentId: string): Promise<Grade[]> {
+  async getGradesByStudent(studentId: string, aliases: string[] = []): Promise<Grade[]> {
     const db = getDatabase()
-    const q = query(
-      collection(db, GRADES_COLLECTION),
-      where('studentId', '==', studentId)
+    const studentIdentifiers = Array.from(
+      new Set([studentId, ...aliases].filter(Boolean))
     )
-    const querySnapshot = await getDocs(q)
-    return querySnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Grade))
+    const gradeMap = new Map<string, Grade>()
+
+    for (const identifier of studentIdentifiers) {
+      const q = query(
+        collection(db, GRADES_COLLECTION),
+        where('studentId', '==', identifier)
+      )
+      const querySnapshot = await getDocs(q)
+      querySnapshot.docs.forEach((docSnap) => {
+        gradeMap.set(docSnap.id, {
+          id: docSnap.id,
+          ...docSnap.data(),
+        } as Grade)
+      })
+    }
+
+    return Array.from(gradeMap.values())
       .sort((a, b) => {
         const timeA = (a.updatedAt as any)?.toMillis?.() || 0
         const timeB = (b.updatedAt as any)?.toMillis?.() || 0
@@ -108,22 +134,22 @@ export const gradeService = {
   ): Promise<void> {
     const db = getDatabase()
     const gradeRef = doc(db, GRADES_COLLECTION, gradeId)
-    await updateDoc(gradeRef, {
+    await updateDoc(gradeRef, stripUndefined({
       status,
       verifiedBy,
       verifiedAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
-    })
+    }))
   },
 
   // Update grade
   async updateGrade(gradeId: string, data: Partial<Grade>): Promise<void> {
     const db = getDatabase()
     const gradeRef = doc(db, GRADES_COLLECTION, gradeId)
-    await updateDoc(gradeRef, {
+    await updateDoc(gradeRef, stripUndefined({
       ...data,
       updatedAt: Timestamp.now(),
-    })
+    }))
   },
 
   // Delete grade
@@ -136,7 +162,6 @@ export const gradeService = {
   // Get grade by ID
   async getGradeById(gradeId: string): Promise<Grade | null> {
     const db = getDatabase()
-    const docRef = doc(db, GRADES_COLLECTION, gradeId)
     const docSnap = await getDocs(query(collection(db, GRADES_COLLECTION), where('id', '==', gradeId)))
     // If the above query was used because 'id' is a field, keep it but also fallback to doc()
     if (!docSnap.empty) {
@@ -151,18 +176,43 @@ export const gradeService = {
     return null
   },
 
-  // Get enrollments for a student
-  async getEnrollmentsByStudent(studentId: string): Promise<any[]> {
+  // Get enrollments for a course
+  async getEnrollmentsByCourse(courseId: string): Promise<any[]> {
     const db = getDatabase()
     const q = query(
       collection(db, 'enrollments'),
-      where('studentId', '==', studentId)
+      where('courseId', '==', courseId)
     )
     const querySnapshot = await getDocs(q)
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }))
+  },
+
+  // Get enrollments for a student
+  async getEnrollmentsByStudent(studentId: string, aliases: string[] = []): Promise<any[]> {
+    const db = getDatabase()
+    const studentIdentifiers = Array.from(
+      new Set([studentId, ...aliases].filter(Boolean))
+    )
+    const enrollmentMap = new Map<string, any>()
+
+    for (const identifier of studentIdentifiers) {
+      const q = query(
+        collection(db, 'enrollments'),
+        where('studentId', '==', identifier)
+      )
+      const querySnapshot = await getDocs(q)
+      querySnapshot.docs.forEach((docSnap) => {
+        enrollmentMap.set(docSnap.id, {
+          id: docSnap.id,
+          ...docSnap.data()
+        })
+      })
+    }
+
+    return Array.from(enrollmentMap.values())
   },
 
   // Get course by ID
@@ -182,13 +232,48 @@ export const gradeService = {
   },
 
   // Get courses by instructor
-  async getCoursesByInstructor(instructorId: string): Promise<any[]> {
+  async getCoursesByInstructor(instructorIdentifiers: string | string[]): Promise<any[]> {
     const db = getDatabase()
-    const q = query(
-      collection(db, 'courses'),
-      where('instructor.id', '==', instructorId)
+    const ids = Array.from(
+      new Set(
+        (Array.isArray(instructorIdentifiers) ? instructorIdentifiers : [instructorIdentifiers])
+          .map(id => id?.trim())
+          .filter(Boolean) as string[]
+      )
     )
-    const querySnapshot = await getDocs(q)
+    if (ids.length === 0) return []
+
+    const lookupFields = ['instructor.id', 'instructor.uid', 'facultyId', 'instructorId', 'teacherId']
+    const courseMap = new Map<string, any>()
+
+    for (const instructorId of ids) {
+      for (const field of lookupFields) {
+        try {
+          const q = query(
+            collection(db, 'courses'),
+            where(field, '==', instructorId)
+          )
+          const querySnapshot = await getDocs(q)
+          querySnapshot.docs.forEach((docSnap) => {
+            courseMap.set(docSnap.id, {
+              id: docSnap.id,
+              ...docSnap.data()
+            })
+          })
+        } catch (error) {
+          // Some legacy documents may not have all fields. Continue fallback queries.
+          console.warn(`Course lookup skipped for field "${field}"`, error)
+        }
+      }
+    }
+
+    return Array.from(courseMap.values())
+  },
+
+  // Get all courses (used by admin views)
+  async getAllCourses(): Promise<any[]> {
+    const db = getDatabase()
+    const querySnapshot = await getDocs(collection(db, 'courses'))
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
@@ -197,12 +282,13 @@ export const gradeService = {
 
   // Upsert grade
   async upsertGrade(gradeData: Partial<Grade>): Promise<Grade> {
-    const db = getDatabase()
     if (gradeData.id) {
-      await this.updateGrade(gradeData.id, gradeData)
+      const { id, ...updateData } = gradeData
+      await this.updateGrade(id, updateData)
       return { ...gradeData } as Grade
     } else {
-      return await this.createGrade(gradeData)
+      const { id: _id, ...createData } = gradeData
+      return await this.createGrade(createData)
     }
   }
 }

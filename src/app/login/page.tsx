@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { authService } from '@/services/authService'
 
 export default function LoginPage() {
@@ -13,6 +13,23 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const isMountedRef = useRef(false)
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearRedirectTimer = () => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current)
+      redirectTimerRef.current = null
+    }
+  }
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      clearRedirectTimer()
+    }
+  }, [])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -29,18 +46,24 @@ export default function LoginPage() {
 
     try {
       await authService.login(email, password)
+      if (!isMountedRef.current) return
       setSuccess('Login successful! Redirecting...')
-      setTimeout(() => {
+      clearRedirectTimer()
+      redirectTimerRef.current = setTimeout(() => {
         router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
+      if (!isMountedRef.current) return
       setError(err.message || 'Login failed. Please try again.')
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 
   const handleGoogleSignIn = async () => {
+    if (loading) return
     setError('')
     setSuccess('')
     setLoading(true)
@@ -49,13 +72,16 @@ export default function LoginPage() {
       console.log('Google Sign-In button clicked')
       await authService.signInWithGoogle()
       console.log('Sign-in successful')
+      if (!isMountedRef.current) return
 
       setSuccess('Google sign-in successful! Redirecting...')
 
-      setTimeout(() => {
+      clearRedirectTimer()
+      redirectTimerRef.current = setTimeout(() => {
         router.push('/dashboard')
       }, 1500)
     } catch (err: any) {
+      if (!isMountedRef.current) return
       console.error('Google Sign-In failed:', err)
 
       // handle some common error codes explicitly
@@ -65,15 +91,19 @@ export default function LoginPage() {
           'Please check your Firebase configuration (OAuth client IDs, ' +
           'authorized domains) and try again.'
         )
-      } else if (err.message.includes('cancelled') || err.message.includes('closed')) {
+      } else if (err.code === 'auth/missing-or-invalid-nonce') {
+        setError('Google sign-in session expired or was duplicated. Please click once and try again.')
+      } else if (err.message?.includes('cancelled') || err.message?.includes('closed')) {
         setError('Sign-in was cancelled. Please try again.')
-      } else if (err.message.includes('popup')) {
+      } else if (err.message?.includes('popup')) {
         setError(err.message)
       } else {
         setError(err.message || 'Google sign-in failed. Please try again.')
       }
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 

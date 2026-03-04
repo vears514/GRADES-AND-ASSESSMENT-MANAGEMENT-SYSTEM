@@ -1,0 +1,34 @@
+type Book @table {
+  title: String!
+  isbn: String!
+  publicationYear: Int!
+  status: String!
+  createdAt: Timestamp!
+  genre: String
+  description: String
+  author: Author
+}
+
+type Author @table {
+  firstName: String!
+  lastName: String!
+  createdAt: Timestamp!
+  bio: String
+}
+
+type Member @table {
+  firstName: String!
+  lastName: String!
+  libraryCardNumber: String!
+  createdAt: Timestamp!
+  email: String
+  phoneNumber: String
+}
+
+type Borrowing @table {
+  borrowDate: Timestamp!
+  createdAt: Timestamp!
+  returnDate: Timestamp
+  book: Book!
+  member: Member!
+}

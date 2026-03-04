@@ -42,22 +42,32 @@ export default function StudentSemestralGradesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let active = true
+
     const fetchAllData = async () => {
-      setLoading(true)
+      if (active) {
+        setLoading(true)
+      }
       try {
         const authUser = await authService.waitForAuthState()
         if (!authUser) return
 
         // Fetch user profile
         const userData = await authService.getUserData(authUser.uid)
+        if (!active) return
         setProfile(userData)
 
-        const studentId = userData?.studentId || authUser.uid
+        const studentIdentifiers = Array.from(
+          new Set([authUser.uid, userData?.studentId].filter(Boolean))
+        ) as string[]
+
+        const primaryStudentId = studentIdentifiers[0] || authUser.uid
+        const fallbackStudentIds = studentIdentifiers.slice(1)
 
         // Fetch enrollments and grades
         const [enrollments, grades] = await Promise.all([
-          gradeService.getEnrollmentsByStudent(studentId),
-          gradeService.getGradesByStudent(studentId)
+          gradeService.getEnrollmentsByStudent(primaryStudentId, fallbackStudentIds),
+          gradeService.getGradesByStudent(primaryStudentId, fallbackStudentIds)
         ])
 
         // Group courses by term (Year + Semester)
@@ -103,6 +113,7 @@ export default function StudentSemestralGradesPage() {
           return a.semKey === 'SPRING' ? -1 : 1;
         })
 
+        if (!active) return
         setSemestersData(finalData)
 
         if (finalData.length > 0) {
@@ -111,10 +122,16 @@ export default function StudentSemestralGradesPage() {
       } catch (error) {
         console.error('Error fetching student data:', error)
       } finally {
-        setLoading(false)
+        if (active) {
+          setLoading(false)
+        }
       }
     }
     fetchAllData()
+
+    return () => {
+      active = false
+    }
   }, [])
 
   if (allowed === null) {

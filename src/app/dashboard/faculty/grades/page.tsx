@@ -28,8 +28,14 @@ export default function FacultyGradesPage() {
       try {
         const authUser = await authService.waitForAuthState()
         if (!authUser) return
+        const profile = await authService.getUserData(authUser.uid)
+        const instructorIdentifiers = Array.from(
+          new Set([authUser.uid, profile?.facultyId].filter(Boolean))
+        ) as string[]
 
-        const facultyCourses = await gradeService.getCoursesByInstructor(authUser.uid)
+        const facultyCourses = profile?.role === 'admin'
+          ? await gradeService.getAllCourses()
+          : await gradeService.getCoursesByInstructor(instructorIdentifiers)
         setCourses(facultyCourses)
         if (facultyCourses.length > 0) {
           setSelectedCourseId(facultyCourses[0].id)
@@ -52,10 +58,40 @@ export default function FacultyGradesPage() {
       const course = courses.find(c => c.id === courseId)
       if (!course) return
 
-      const [enrolledStudents, courseGrades] = await Promise.all([
-        authService.getUsersByIds(course.students || []),
-        gradeService.getGradesByCourse(courseId)
+      let studentIdentifiers = Array.from(
+        new Set((course.students || []).filter(Boolean))
+      )
+
+      // Legacy course docs may not include a "students" array; fallback to enrollments.
+      if (studentIdentifiers.length === 0) {
+        const enrollments = await gradeService.getEnrollmentsByCourse(courseId)
+        studentIdentifiers = Array.from(
+          new Set(
+            enrollments
+              .map((enrollment: any) => enrollment.studentId)
+              .filter(Boolean)
+          )
+        )
+      }
+
+      const gradeAliases = Array.from(
+        new Set(
+          [
+            course.code,
+            course.code?.toLowerCase?.(),
+            course.code?.toUpperCase?.(),
+          ].filter((value): value is string => Boolean(value && value !== courseId))
+        )
+      )
+
+      const [usersByDocId, courseGrades] = await Promise.all([
+        authService.getUsersByIds(studentIdentifiers),
+        gradeService.getGradesByCourse(courseId, gradeAliases)
       ])
+
+      const enrolledStudents = usersByDocId.length > 0
+        ? usersByDocId
+        : await authService.getUsersByStudentIds(studentIdentifiers)
 
       setStudents(enrolledStudents)
       setGrades(courseGrades)
@@ -74,24 +110,34 @@ export default function FacultyGradesPage() {
 
   if (!allowed) return <div>Checking permissions…</div>
 
+  const getGradeForStudent = (student: User) => {
+    const studentIdentifiers = [student.id, student.studentId].filter(Boolean)
+    return grades.find((grade) => studentIdentifiers.includes(grade.studentId))
+  }
+
   const handleEdit = (studentId: string, currentScore: number) => {
     setEditingId(studentId)
     setEditScore(currentScore.toString())
   }
 
-  const handleSave = async (studentId: string) => {
+  const handleSave = async (student: User) => {
     if (!selectedCourseId) return
+    const score = Number(editScore)
+    if (!Number.isFinite(score) || score < 0 || score > 100) {
+      alert('Please enter a valid score from 0 to 100.')
+      return
+    }
+
     setSubmitting(true)
     try {
       const authUser = authService.getCurrentUser()
-      const existingGrade = grades.find(g => g.studentId === studentId)
-      const score = parseFloat(editScore)
+      const existingGrade = getGradeForStudent(student)
       const conversion = convertNumericToGrade(score)
 
       const gradeData: Partial<Grade> = {
         id: existingGrade?.id,
         courseId: selectedCourseId,
-        studentId: studentId,
+        studentId: existingGrade?.studentId || student.studentId || student.id,
         score: score,
         letterGrade: conversion.letterGrade,
         remarks: conversion.remarks,
@@ -108,7 +154,8 @@ export default function FacultyGradesPage() {
       setEditingId(null)
     } catch (error) {
       console.error('Error saving grade:', error)
-      alert('Failed to save grade. Please try again.')
+      const message = error instanceof Error ? error.message : 'Please try again.'
+      alert(`Failed to save grade. ${message}`)
     } finally {
       setSubmitting(false)
     }
@@ -141,7 +188,7 @@ export default function FacultyGradesPage() {
     const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
       student.studentId?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const grade = grades.find(g => g.studentId === student.id)
+    const grade = getGradeForStudent(student)
     const matchesStatus = statusFilter === 'All' ||
       (statusFilter === 'Draft' && grade?.status === 'draft') ||
       (statusFilter === 'Submitted' && grade?.status === 'submitted') ||
@@ -249,7 +296,7 @@ export default function FacultyGradesPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filteredStudents.map((student) => {
-                  const grade = grades.find(g => g.studentId === student.id)
+                  const grade = getGradeForStudent(student)
                   const isEditing = editingId === student.id
 
                   return (
@@ -305,7 +352,7 @@ export default function FacultyGradesPage() {
                         {isEditing ? (
                           <div className="flex justify-end gap-2">
                             <button
-                              onClick={() => handleSave(student.id)}
+                              onClick={() => handleSave(student)}
                               disabled={submitting}
                               className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                               title="Save"

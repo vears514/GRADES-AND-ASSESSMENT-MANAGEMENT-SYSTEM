@@ -15,12 +15,20 @@ const path = require('path');
 const VALID_ROLES = ['admin', 'registrar', 'faculty', 'student'];
 
 function resolveServiceAccountPaths() {
-  const candidates = [
+  const explicitCandidates = [
     path.join(__dirname, '../serviceAccountKey.json'),
-    path.join(__dirname, '../gradehub-beltran-firebase-adminsdk-fbsvc-be10c82a84.json'),
+  ];
+  const discoveredKeys = fs
+    .readdirSync(path.join(__dirname, '..'))
+    .filter((filename) => /^gradehub-beltran-firebase-adminsdk-.*\.json$/i.test(filename))
+    .map((filename) => path.join(__dirname, '..', filename));
+
+  const candidates = [
+    ...explicitCandidates,
+    ...discoveredKeys,
   ];
 
-  return candidates.filter((candidate) => fs.existsSync(candidate));
+  return Array.from(new Set(candidates.filter((candidate) => fs.existsSync(candidate))));
 }
 
 function loadServiceAccount(pathname) {
@@ -52,8 +60,8 @@ async function initializeWorkingApp(candidates) {
     );
 
     try {
-      // Force token exchange now to verify this key is still valid.
-      await app.auth().listUsers(1);
+      // Firestore access is enough for this repair flow.
+      await app.firestore().collection('users').limit(1).get();
       console.log(`Using service account key: ${path.basename(pathname)} (${serviceAccount.private_key_id || 'unknown-kid'})`);
       return app;
     } catch (error) {
@@ -95,28 +103,15 @@ function parseRoleMappings(args) {
 }
 
 async function applyRole(email, role, app) {
-  const auth = app.auth();
   const db = app.firestore();
-  const userRecord = await auth.getUserByEmail(email);
-  const uid = userRecord.uid;
-  const claims = userRecord.customClaims || {};
-
-  await auth.setCustomUserClaims(uid, { ...claims, role });
-
-  // Primary profile doc (uid-based)
-  await db.collection('users').doc(uid).set(
-    {
-      uid,
-      email,
-      role,
-      updatedAt: new Date(),
-    },
-    { merge: true }
-  );
-
-  // Also update any existing docs keyed differently but with matching email
   const matchingProfiles = await db.collection('users').where('email', '==', email).get();
+  if (matchingProfiles.empty) {
+    throw new Error(`No Firestore user profile found for ${email}`);
+  }
+
+  const touchedDocIds = new Set();
   for (const profileDoc of matchingProfiles.docs) {
+    touchedDocIds.add(profileDoc.id);
     await profileDoc.ref.set(
       {
         role,
@@ -126,7 +121,34 @@ async function applyRole(email, role, app) {
     );
   }
 
-  console.log(`Updated ${email} -> ${role} (uid: ${uid})`);
+  // Try updating custom claims when allowed, but don't fail role repair if IAM blocks it.
+  let customClaimsUpdated = false;
+  try {
+    const auth = app.auth();
+    const userRecord = await auth.getUserByEmail(email);
+    const uid = userRecord.uid;
+    const claims = userRecord.customClaims || {};
+    await auth.setCustomUserClaims(uid, { ...claims, role });
+    await db.collection('users').doc(uid).set(
+      {
+        uid,
+        email,
+        role,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+    touchedDocIds.add(uid);
+    customClaimsUpdated = true;
+  } catch (error) {
+    console.warn(`Skipped custom-claims update for ${email}: ${error?.message || String(error)}`);
+  }
+
+  const docList = Array.from(touchedDocIds).join(', ');
+  console.log(
+    `Updated ${email} -> ${role} in Firestore docs [${docList}]` +
+    (customClaimsUpdated ? ' (custom claims updated)' : ' (custom claims skipped)')
+  );
 }
 
 async function main() {

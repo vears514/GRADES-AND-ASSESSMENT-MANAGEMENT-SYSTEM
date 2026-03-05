@@ -184,7 +184,7 @@ export default function FacultyGradesPage() {
   }
 
   const filteredStudents = students.filter(student => {
-    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase()
+    const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim().toLowerCase()
     const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
       student.studentId?.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -298,16 +298,25 @@ export default function FacultyGradesPage() {
                 {filteredStudents.map((student) => {
                   const grade = getGradeForStudent(student)
                   const isEditing = editingId === student.id
+                  const firstName = (student.firstName || '').trim()
+                  const lastName = (student.lastName || '').trim()
+                  const displayName =
+                    `${firstName} ${lastName}`.trim() ||
+                    student.email ||
+                    student.studentId ||
+                    'Unknown Student'
+                  const firstInitial = (firstName || lastName || '?').charAt(0).toUpperCase()
+                  const secondInitial = (lastName || firstName.slice(1) || '').charAt(0).toUpperCase()
 
                   return (
                     <tr key={student.id} className="hover:bg-gray-50/50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold mr-3">
-                            {student.firstName[0]}{student.lastName[0]}
+                            {firstInitial}{secondInitial}
                           </div>
                           <div>
-                            <div className="text-sm font-bold text-gray-900">{student.firstName} {student.lastName}</div>
+                            <div className="text-sm font-bold text-gray-900">{displayName}</div>
                             <div className="text-xs text-gray-500">{student.studentId || student.id.slice(0, 8)}</div>
                           </div>
                         </div>

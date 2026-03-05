@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GradeHub Login - Static</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">GH</span><span>GradeHub</span></a>
+      <nav class="nav-links">
+        <a href="index.html#features">Features</a>
+        <a href="register.html">Register</a>
+        <a class="btn btn-primary" href="login.html">Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="auth-hero">
+    <div>
+      <div class="badge">Access for faculty, registrar, and students</div>
+      <h1 style="margin:16px 0 10px;">Welcome back to GradeHub</h1>
+      <p class="muted">Use the static form on the right to see the layout. This preview keeps everything local and does not reach Firebase.</p>
+      <div class="card" style="margin-top:20px;">
+        <h3 style="margin:0 0 8px;">What this demo shows</h3>
+        <ul class="list-plain">
+          <li>- Error and success callouts</li>
+          <li>- Password toggle</li>
+          <li>- Google sign in button styling</li>
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <div class="auth-card">
+        <div style="text-align:center; margin-bottom:16px;">
+          <div class="brand"><span class="brand-mark">GH</span><span>GradeHub</span></div>
+          <p class="auth-meta">Academic Grade Management System</p>
+        </div>
+
+        <form data-demo-form>
+          <div class="alert alert-danger" style="display:none;" id="login-error">Please fill in all fields.</div>
+          <div class="alert alert-success" style="display:none;" id="login-success">Login successful. Redirecting...</div>
+
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" placeholder="you@example.com" required />
+
+          <label for="login-password" style="margin-top:12px;">Password</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input id="login-password" type="password" placeholder="********" required />
+            <button type="button" class="btn btn-secondary" id="toggle-login-password" style="padding:10px 12px;">Show</button>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0 8px;">
+            <label class="muted" style="font-size:14px; font-weight:500; display:inline-flex; gap:6px; align-items:center;">
+              <input type="checkbox" /> Remember me
+            </label>
+            <a class="small-link" href="#">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;">Sign In</button>
+
+          <button type="button" class="btn btn-secondary" style="width:100%; margin-top:12px;">
+            <span style="width:18px; height:18px; border-radius:50%; background:#fff; border:1px solid #cbd5e1; display:inline-block;"></span>
+            Sign in with Google
+          </button>
+
+          <p class="auth-meta" style="text-align:center; margin-top:12px;">No network calls are made in this static preview.</p>
+          <div class="demo-note" style="display:none; margin-top:10px; font-size:14px; color:#16a34a;"></div>
+
+          <p style="text-align:center; margin-top:12px;" class="small-link">Need an account? <a href="register.html">Register here</a>.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>

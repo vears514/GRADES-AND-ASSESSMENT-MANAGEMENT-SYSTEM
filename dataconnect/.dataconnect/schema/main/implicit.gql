@@ -1,36 +1,6 @@
-extend type Author {
+extend type Grade {
   """
   ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
   """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Author", purpose: IMPLICIT_KEY_FIELD)
-}
-extend type Book {
-  """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
-  """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Book", purpose: IMPLICIT_KEY_FIELD)
-  """
-  ✨ Implicit foreign key field based on `Book`.`author`. It must match the value of `Author`.`id`. See `@ref` for how to customize it.
-  """
-  authorId: UUID @fdc_generated(from: "Book.author", purpose: IMPLICIT_REF_FIELD)
-}
-extend type Borrowing {
-  """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
-  """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Borrowing", purpose: IMPLICIT_KEY_FIELD)
-  """
-  ✨ Implicit foreign key field based on `Borrowing`.`book`. It must match the value of `Book`.`id`. See `@ref` for how to customize it.
-  """
-  bookId: UUID! @fdc_generated(from: "Borrowing.book", purpose: IMPLICIT_REF_FIELD)
-  """
-  ✨ Implicit foreign key field based on `Borrowing`.`member`. It must match the value of `Member`.`id`. See `@ref` for how to customize it.
-  """
-  memberId: UUID! @fdc_generated(from: "Borrowing.member", purpose: IMPLICIT_REF_FIELD)
-}
-extend type Member {
-  """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
-  """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Member", purpose: IMPLICIT_KEY_FIELD)
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Grade", purpose: IMPLICIT_KEY_FIELD)
 }

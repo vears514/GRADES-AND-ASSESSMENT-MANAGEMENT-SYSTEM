@@ -290,5 +290,18 @@ export const gradeService = {
       const { id: _id, ...createData } = gradeData
       return await this.createGrade(createData)
     }
+  },
+
+  // Publish grade (sets status to approved and stamps publishedAt/by)
+  async publishGrade(gradeData: Partial<Grade> & { submittedBy?: string }): Promise<Grade> {
+    const payload: Partial<Grade> = {
+      ...gradeData,
+      status: 'approved',
+      publishedAt: Timestamp.now(),
+      publishedBy: gradeData.submittedBy || gradeData.verifiedBy || gradeData.submittedBy,
+      submittedAt: gradeData.submittedAt || Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    }
+    return await this.upsertGrade(payload)
   }
 }

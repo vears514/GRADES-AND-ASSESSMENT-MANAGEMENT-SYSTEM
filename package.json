@@ -24,6 +24,8 @@
     "fix-roles": "node scripts/fixRolesByEmail.js"
   },
   "dependencies": {
+    "@dataconnect/admin-generated": "file:src/dataconnect-admin-generated",
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "axios": "^1.6.2",
     "bash": "^0.0.1",
     "chart.js": "^4.5.1",

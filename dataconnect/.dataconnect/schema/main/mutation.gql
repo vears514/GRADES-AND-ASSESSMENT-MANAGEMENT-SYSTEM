@@ -1,152 +1,80 @@
 extend type Mutation {
   """
-  ✨ Insert a single `Author` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert a single `Grade` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  author_insert(
+  grade_insert(
     """
     Data object to insert into the table.
     """
-    data: Author_Data!
-  ): Author_KeyOutput! @fdc_generated(from: "Author", purpose: INSERT_SINGLE)
+    data: Grade_Data!
+  ): Grade_KeyOutput! @fdc_generated(from: "Grade", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `Book` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert a single `Term` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  book_insert(
+  term_insert(
     """
     Data object to insert into the table.
     """
-    data: Book_Data!
-  ): Book_KeyOutput! @fdc_generated(from: "Book", purpose: INSERT_SINGLE)
+    data: Term_Data!
+  ): Term_KeyOutput! @fdc_generated(from: "Term", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `Borrowing` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert `Grade` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  borrowing_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: Borrowing_Data!
-  ): Borrowing_KeyOutput! @fdc_generated(from: "Borrowing", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `Member` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  member_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: Member_Data!
-  ): Member_KeyOutput! @fdc_generated(from: "Member", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert `Author` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  author_insertMany(
+  grade_insertMany(
     """
     List of data objects to insert into the table.
     """
-    data: [Author_Data!]!
-  ): [Author_KeyOutput!]! @fdc_generated(from: "Author", purpose: INSERT_MULTIPLE)
+    data: [Grade_Data!]!
+  ): [Grade_KeyOutput!]! @fdc_generated(from: "Grade", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `Book` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert `Term` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  book_insertMany(
+  term_insertMany(
     """
     List of data objects to insert into the table.
     """
-    data: [Book_Data!]!
-  ): [Book_KeyOutput!]! @fdc_generated(from: "Book", purpose: INSERT_MULTIPLE)
+    data: [Term_Data!]!
+  ): [Term_KeyOutput!]! @fdc_generated(from: "Term", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `Borrowing` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert or update a single `Grade` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Grade`.
   """
-  borrowing_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [Borrowing_Data!]!
-  ): [Borrowing_KeyOutput!]! @fdc_generated(from: "Borrowing", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `Member` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  member_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [Member_Data!]!
-  ): [Member_KeyOutput!]! @fdc_generated(from: "Member", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert or update a single `Author` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Author`.
-  """
-  author_upsert(
+  grade_upsert(
     """
     Data object to insert or update if it already exists.
     """
-    data: Author_Data!
-  ): Author_KeyOutput! @fdc_generated(from: "Author", purpose: UPSERT_SINGLE)
+    data: Grade_Data!
+  ): Grade_KeyOutput! @fdc_generated(from: "Grade", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `Book` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Book`.
+  ✨ Insert or update a single `Term` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Term`.
   """
-  book_upsert(
+  term_upsert(
     """
     Data object to insert or update if it already exists.
     """
-    data: Book_Data!
-  ): Book_KeyOutput! @fdc_generated(from: "Book", purpose: UPSERT_SINGLE)
+    data: Term_Data!
+  ): Term_KeyOutput! @fdc_generated(from: "Term", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `Borrowing` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Borrowing`.
+  ✨ Insert or update `Grade` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Grade`.
   """
-  borrowing_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: Borrowing_Data!
-  ): Borrowing_KeyOutput! @fdc_generated(from: "Borrowing", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `Member` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Member`.
-  """
-  member_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: Member_Data!
-  ): Member_KeyOutput! @fdc_generated(from: "Member", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update `Author` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Author`.
-  """
-  author_upsertMany(
+  grade_upsertMany(
     """
     List of data objects to insert or update if it already exists.
     """
-    data: [Author_Data!]!
-  ): [Author_KeyOutput!]! @fdc_generated(from: "Author", purpose: UPSERT_MULTIPLE)
+    data: [Grade_Data!]!
+  ): [Grade_KeyOutput!]! @fdc_generated(from: "Grade", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `Book` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Book`.
+  ✨ Insert or update `Term` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Term`.
   """
-  book_upsertMany(
+  term_upsertMany(
     """
     List of data objects to insert or update if it already exists.
     """
-    data: [Book_Data!]!
-  ): [Book_KeyOutput!]! @fdc_generated(from: "Book", purpose: UPSERT_MULTIPLE)
+    data: [Term_Data!]!
+  ): [Term_KeyOutput!]! @fdc_generated(from: "Term", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `Borrowing` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Borrowing`.
+  ✨ Update a single `Grade` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Grade` or `null` if not found.
   """
-  borrowing_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [Borrowing_Data!]!
-  ): [Borrowing_KeyOutput!]! @fdc_generated(from: "Borrowing", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `Member` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Member`.
-  """
-  member_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [Member_Data!]!
-  ): [Member_KeyOutput!]! @fdc_generated(from: "Member", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Update a single `Author` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Author` or `null` if not found.
-  """
-  author_update(
+  grade_update(
     """
     The unique ID of the object.
     """
@@ -155,98 +83,55 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: Author_Key
+    key: Grade_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Author_FirstRow
+    first: Grade_FirstRow
 
     """
     Data object containing fields to be updated.
     """
-    data: Author_Data!
-  ): Author_KeyOutput @fdc_generated(from: "Author", purpose: UPDATE_SINGLE)
+    data: Grade_Data!
+  ): Grade_KeyOutput @fdc_generated(from: "Grade", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `Book` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Book` or `null` if not found.
+  ✨ Update a single `Term` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Term` or `null` if not found.
   """
-  book_update(
+  term_update(
     """
     The unique ID of the object.
     """
-    id: UUID
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
 
     """
     The key used to identify the object.
     """
-    key: Book_Key
+    key: Term_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Book_FirstRow
+    first: Term_FirstRow
 
     """
     Data object containing fields to be updated.
     """
-    data: Book_Data!
-  ): Book_KeyOutput @fdc_generated(from: "Book", purpose: UPDATE_SINGLE)
+    data: Term_Data!
+  ): Term_KeyOutput @fdc_generated(from: "Term", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `Borrowing` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Borrowing` or `null` if not found.
+  ✨ Update `Grade` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
-  borrowing_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: Borrowing_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Borrowing_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: Borrowing_Data!
-  ): Borrowing_KeyOutput @fdc_generated(from: "Borrowing", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `Member` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Member` or `null` if not found.
-  """
-  member_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: Member_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Member_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: Member_Data!
-  ): Member_KeyOutput @fdc_generated(from: "Member", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update `Author` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  author_updateMany(
+  grade_updateMany(
     """
     Filter condition to specify which rows to update.
     """
-    where: Author_Filter
+    where: Grade_Filter
 
     """
     Set to true to update all rows.
@@ -256,16 +141,16 @@ extend type Mutation {
     """
     Data object containing fields to update.
     """
-    data: Author_Data!
-  ): Int! @fdc_generated(from: "Author", purpose: UPDATE_MULTIPLE)
+    data: Grade_Data!
+  ): Int! @fdc_generated(from: "Grade", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `Book` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  ✨ Update `Term` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
-  book_updateMany(
+  term_updateMany(
     """
     Filter condition to specify which rows to update.
     """
-    where: Book_Filter
+    where: Term_Filter
 
     """
     Set to true to update all rows.
@@ -275,50 +160,12 @@ extend type Mutation {
     """
     Data object containing fields to update.
     """
-    data: Book_Data!
-  ): Int! @fdc_generated(from: "Book", purpose: UPDATE_MULTIPLE)
+    data: Term_Data!
+  ): Int! @fdc_generated(from: "Term", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `Borrowing` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  ✨ Delete a single `Grade` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
-  borrowing_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: Borrowing_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: Borrowing_Data!
-  ): Int! @fdc_generated(from: "Borrowing", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `Member` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  member_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: Member_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: Member_Data!
-  ): Int! @fdc_generated(from: "Member", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Delete a single `Author` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  author_delete(
+  grade_delete(
     """
     The unique ID of the object.
     """
@@ -327,124 +174,63 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: Author_Key
+    key: Grade_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Author_FirstRow
-  ): Author_KeyOutput @fdc_generated(from: "Author", purpose: DELETE_SINGLE)
+    first: Grade_FirstRow
+  ): Grade_KeyOutput @fdc_generated(from: "Grade", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `Book` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  ✨ Delete a single `Term` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
-  book_delete(
+  term_delete(
     """
     The unique ID of the object.
     """
-    id: UUID
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
 
     """
     The key used to identify the object.
     """
-    key: Book_Key
+    key: Term_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Book_FirstRow
-  ): Book_KeyOutput @fdc_generated(from: "Book", purpose: DELETE_SINGLE)
+    first: Term_FirstRow
+  ): Term_KeyOutput @fdc_generated(from: "Term", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `Borrowing` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  ✨ Delete `Grade` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
-  borrowing_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: Borrowing_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Borrowing_FirstRow
-  ): Borrowing_KeyOutput @fdc_generated(from: "Borrowing", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `Member` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  member_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: Member_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: Member_FirstRow
-  ): Member_KeyOutput @fdc_generated(from: "Member", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete `Author` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  author_deleteMany(
+  grade_deleteMany(
     """
     Filter condition to specify which rows to delete.
     """
-    where: Author_Filter
+    where: Grade_Filter
 
     """
     Set to true to delete all rows.
     """
     all: Boolean = false
-  ): Int! @fdc_generated(from: "Author", purpose: DELETE_MULTIPLE)
+  ): Int! @fdc_generated(from: "Grade", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `Book` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  ✨ Delete `Term` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
-  book_deleteMany(
+  term_deleteMany(
     """
     Filter condition to specify which rows to delete.
     """
-    where: Book_Filter
+    where: Term_Filter
 
     """
     Set to true to delete all rows.
     """
     all: Boolean = false
-  ): Int! @fdc_generated(from: "Book", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `Borrowing` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  borrowing_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: Borrowing_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "Borrowing", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `Member` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  member_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: Member_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "Member", purpose: DELETE_MULTIPLE)
+  ): Int! @fdc_generated(from: "Term", purpose: DELETE_MULTIPLE)
 }

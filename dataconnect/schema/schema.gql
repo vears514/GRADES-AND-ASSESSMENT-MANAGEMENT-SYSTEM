@@ -1,34 +1,33 @@
-type Book @table {
-  title: String!
-  isbn: String!
-  publicationYear: Int!
-  status: String!
-  createdAt: Timestamp!
-  genre: String
-  description: String
-  author: Author
+# Grade Hub Data Connect Schema
+
+input GradeInput {
+  studentId: String!
+  termId: String!
+  subjectCode: String!
+  subjectTitle: String!
+  units: Int!
+  instructorName: String!
+  gradeValue: String!
+  remarks: String
 }
 
-type Author @table {
-  firstName: String!
-  lastName: String!
-  createdAt: Timestamp!
-  bio: String
+type Term @table {
+  id: String!
+  name: String!
+  startDate: Timestamp!
+  endDate: Timestamp!
 }
 
-type Member @table {
-  firstName: String!
-  lastName: String!
-  libraryCardNumber: String!
-  createdAt: Timestamp!
-  email: String
-  phoneNumber: String
-}
-
-type Borrowing @table {
-  borrowDate: Timestamp!
-  createdAt: Timestamp!
-  returnDate: Timestamp
-  book: Book!
-  member: Member!
+type Grade @table {
+  studentId: String!
+  termId: String!
+  subjectCode: String!
+  subjectTitle: String!
+  units: Int!
+  instructorName: String!
+  gradeValue: String!
+  remarks: String
+  status: String! # Draft | Submitted | Published
+  publishedAt: Timestamp
+  publishedBy: String
 }

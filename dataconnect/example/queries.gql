@@ -1,39 +1,26 @@
-query ListAssignmentsForCurrentUser @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
-  assignments(where: { studentId: { eq_expr: "auth.uid" } }) {
-    id
-    title
-    description
-    dueDate
-    status
-  }
-}
+# Example operations for Grade Hub
 
-mutation CreateAssignment($title: String!, $description: String, $dueDate: Timestamp!) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
-  assignment_insert(data: {
-    title: $title,
-    description: $description,
-    dueDate: $dueDate,
-    studentId_expr: "auth.uid"
-  }) {
-    id
-  }
-}
-
-mutation UpdateAssignmentStatus($id: UUID!, $status: String!) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
-  assignment_update(key: { id: $id }, data: {
-    status: $status
-  }) {
-    id
-  }
-}
-
-query GetCourseDetailsPublic($courseId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
-  course(key: { id: $courseId }) {
+query ListTerms @auth(expr: "auth != null && auth.uid != ''") {
+  terms {
     id
     name
-    description
-    instructor {
-      displayName
-    }
+    startDate
+    endDate
+  }
+}
+
+query ListGradesByStudentAndTerm($studentId: String!, $termId: String!) @auth(expr: "auth != null && auth.uid == studentId") {
+  grades(where: { studentId: { eq: $studentId }, termId: { eq: $termId } }) {
+    studentId
+    termId
+    subjectCode
+    subjectTitle
+    units
+    instructorName
+    gradeValue
+    remarks
+    status
+    publishedAt
+    publishedBy
   }
 }

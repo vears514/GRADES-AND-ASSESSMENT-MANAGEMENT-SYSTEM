@@ -1,0 +1,18 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Users\pbrya\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.11.0
+2 info using node@v24.12.0
+3 silly config load:file:C:\Users\pbrya\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.npmrc
+5 silly config load:file:C:\Users\pbrya\.npmrc
+6 silly config load:file:C:\Users\pbrya\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm exec firebase dataconnect:compile
+8 verbose argv "exec" "--" "firebase" "dataconnect:compile"
+9 verbose logfile logs-max:10 dir:C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.firebase_config\npm-cache\_logs\2026-03-06T17_53_44_369Z-
+10 verbose logfile C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.firebase_config\npm-cache\_logs\2026-03-06T17_53_44_369Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose cwd C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM
+13 verbose os Windows_NT 10.0.19045
+14 verbose node v24.12.0
+15 verbose npm  v11.11.0
+16 verbose exit 1
+17 verbose code 1

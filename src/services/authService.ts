@@ -41,6 +41,15 @@ export const authService = {
   async register(email: string, password: string, userData: Partial<User>): Promise<User> {
     const { auth, db } = getServices()
 
+    // Admin lockdown: allow only one admin account
+    if (userData.role === 'admin') {
+      const adminCheck = query(collection(db, USERS_COLLECTION), where('role', '==', 'admin'))
+      const adminSnap = await getDocs(adminCheck)
+      if (!adminSnap.empty) {
+        throw withAuthCode(new Error('An admin account already exists. Please sign in with the existing admin.'), 'Admin already exists')
+      }
+    }
+
     // Create Firebase auth user
     const { user: authUser } = await createUserWithEmailAndPassword(auth, email, password)
 

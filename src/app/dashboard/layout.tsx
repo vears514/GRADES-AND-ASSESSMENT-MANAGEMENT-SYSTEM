@@ -86,7 +86,6 @@ export default function DashboardLayout({
               onToggle={() => setExpandedMenu(expandedMenu === 'faculty' ? null : 'faculty')}
               items={[
                 { href: '/dashboard/faculty/grades', label: 'Grade Entry', icon: '' },
-                { href: '/dashboard/faculty/corrections', label: 'Corrections', icon: '' },
               ]}
             />
           )}
@@ -120,6 +119,7 @@ export default function DashboardLayout({
 
           <div className="pt-6 border-t mt-6">
             <NavLink href="/dashboard/profile" label="Profile" icon="" />
+            {userRole === 'admin' && <NavLink href="/register" label="Registration" icon="" />}
             <NavLink href="/logout" label="Logout" icon="" />
           </div>
         </nav>

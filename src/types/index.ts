@@ -59,12 +59,17 @@ export interface Grade {
   courseId: string
   studentId: string
   score: number
+  quizScore?: number
+  examScore?: number
+  finalScore?: number
   letterGrade: string
   weightage: number
   remarks?: string
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected'
   submittedBy: string
   submittedAt?: Date
+  publishedAt?: Date
+  publishedBy?: string
   verifiedBy?: string
   verifiedAt?: Date
   createdAt: Date

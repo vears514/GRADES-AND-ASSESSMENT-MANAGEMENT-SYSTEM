@@ -12,6 +12,7 @@ node_modules/
 
 # Production
 /build
+scripts/dist/
 
 # Misc
 .DS_Store
@@ -40,6 +41,9 @@ yarn-error.log*
 # Firebase
 .firebase/
 .firebaserc
+serviceAccountKey.json
+gradehub-beltran-firebase-adminsdk-*.json
+static-bundle/gradehub-beltran-firebase-adminsdk-*.json
 
 # OS
 Thumbs.db

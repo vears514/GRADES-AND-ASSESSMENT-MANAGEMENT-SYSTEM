@@ -19,8 +19,10 @@ export interface User {
   section?: string
   adviser?: string
   currentGPA?: number
+  enrolledCourses?: string[]
   enrolledSubjects?: string[]
   semester?: string
+  currentSemester?: string
   schoolYear?: string
   gender?: string
   college?: string
@@ -30,7 +32,6 @@ export interface User {
   facultyId?: string
   assignedSubjects?: string[]
   handledSections?: string[]
-  currentSemester?: string
 
   // audit/system
   lastLogin?: Date

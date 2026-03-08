@@ -261,6 +261,29 @@ export const authService = {
     return Array.from(resultsMap.values())
   },
 
+  // Get students enrolled in a specific course code (uses enrolledCourses array-contains)
+  async getStudentsByEnrolledCourse(courseCode: string): Promise<User[]> {
+    if (!courseCode) return []
+    const { db } = getServices()
+
+    const variants = Array.from(new Set([
+      courseCode.trim(),
+      courseCode.replace(/\s+/g, '').toUpperCase(),
+      courseCode.trim().toUpperCase(),
+    ])).filter(Boolean) as string[]
+
+    const q = query(
+      collection(db, USERS_COLLECTION),
+      where('enrolledCourses', 'array-contains-any', variants.slice(0, 10)) // Firestore limit is 10
+    )
+    const snapshot = await getDocs(q)
+    const results: Record<string, User> = {}
+    snapshot.docs.forEach((docSnap) => {
+      results[docSnap.id] = { id: docSnap.id, ...docSnap.data() } as User
+    })
+    return Object.values(results)
+  },
+
   // Subscribe to auth changes
   onAuthStateChanged(callback: (user: FirebaseUser | null) => void) {
     const { auth } = getServices()

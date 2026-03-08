@@ -8,13 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#3B82F6',
-        secondary: '#10B981',
-        danger: '#EF4444',
-        warning: '#F59E0B',
-        neutral: '#6B7280',
-        surface: '#F9FAFB',
-        border: '#E5E7EB',
+        'primary-dark': '#1E3A5F',
+        'secondary': '#10B981',
+        'danger': '#EF4444',
+        'warning': '#F59E0B',
+        'neutral': '#ffffff',
+        'surface': '#ffffff',
+        'border-gray-200': '#f8fafc',
       },
       fontSize: {
         xs: '12px',

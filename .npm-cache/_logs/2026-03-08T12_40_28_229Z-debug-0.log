@@ -1,0 +1,81 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Users\pbrya\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.11.0
+2 info using node@v24.12.0
+3 silly config load:file:C:\Users\pbrya\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.npmrc
+5 silly config load:file:C:\Users\pbrya\.npmrc
+6 silly config load:file:C:\Users\pbrya\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install firebase-admin@13.7.0 @next/eslint-plugin-next@16.1.6 eslint-config-next@16.1.6 eslint@8.57.0
+8 verbose argv "install" "firebase-admin@13.7.0" "@next/eslint-plugin-next@16.1.6" "eslint-config-next@16.1.6" "eslint@8.57.0" "--save-dev" "--legacy-peer-deps"
+9 verbose logfile logs-max:10 dir:C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.npm-cache\_logs\2026-03-08T12_40_28_229Z-
+10 verbose logfile C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.npm-cache\_logs\2026-03-08T12_40_28_229Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 warn idealTree Removing dependencies.firebase-admin in favor of devDependencies.firebase-admin
+14 silly idealTree buildDeps
+15 silly fetch manifest eslint@8.57.0
+16 silly packumentCache full:https://registry.npmjs.org/eslint cache-miss
+17 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/eslint attempt 1 failed with EACCES
+19 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with EACCES
+20 http fetch GET https://registry.npmjs.org/eslint attempt 2 failed with EACCES
+21 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with EACCES
+22 http fetch GET https://registry.npmjs.org/eslint attempt 3 failed with EACCES
+23 silly fetch manifest eslint-config-next@16.1.6
+24 silly packumentCache full:https://registry.npmjs.org/eslint-config-next cache-miss
+25 http fetch GET https://registry.npmjs.org/eslint-config-next attempt 1 failed with EACCES
+26 http fetch GET https://registry.npmjs.org/eslint-config-next attempt 2 failed with EACCES
+27 http fetch GET https://registry.npmjs.org/eslint-config-next attempt 3 failed with ENETUNREACH
+28 silly fetch manifest firebase-admin@13.7.0
+29 silly packumentCache full:https://registry.npmjs.org/firebase-admin cache-miss
+30 http fetch GET https://registry.npmjs.org/firebase-admin attempt 1 failed with ENETUNREACH
+31 http fetch GET https://registry.npmjs.org/firebase-admin attempt 2 failed with ENETUNREACH
+32 http fetch GET https://registry.npmjs.org/firebase-admin attempt 3 failed with ENETUNREACH
+33 silly fetch manifest @next/eslint-plugin-next@16.1.6
+34 silly packumentCache full:https://registry.npmjs.org/@next%2feslint-plugin-next cache-miss
+35 http fetch GET https://registry.npmjs.org/@next%2feslint-plugin-next attempt 1 failed with ENETUNREACH
+36 http fetch GET https://registry.npmjs.org/@next%2feslint-plugin-next attempt 2 failed with ENETUNREACH
+37 http fetch GET https://registry.npmjs.org/@next%2feslint-plugin-next attempt 3 failed with ENETUNREACH
+38 silly placeDep ROOT @next/eslint-plugin-next@ REPLACE for: grades-assessment-system@1.0.0 want: 16.1.6
+39 silly placeDep ROOT eslint@ REPLACE for: grades-assessment-system@1.0.0 want: 8.57.0
+40 silly placeDep ROOT eslint-config-next@ REPLACE for: grades-assessment-system@1.0.0 want: 16.1.6
+41 silly placeDep ROOT firebase-admin@ REPLACE for: grades-assessment-system@1.0.0 want: 13.7.0
+42 verbose type system
+43 verbose stack FetchError: request to https://registry.npmjs.org/eslint failed, reason: 
+43 verbose stack     at ClientRequest.<anonymous> (C:\Users\pbrya\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+43 verbose stack     at ClientRequest.emit (node:events:508:28)
+43 verbose stack     at emitErrorEvent (node:_http_client:108:11)
+43 verbose stack     at _destroy (node:_http_client:962:9)
+43 verbose stack     at onSocketNT (node:_http_client:982:5)
+43 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+44 error code EACCES
+45 error errno EACCES
+46 error FetchError: request to https://registry.npmjs.org/eslint failed, reason: 
+46 error     at ClientRequest.<anonymous> (C:\Users\pbrya\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+46 error     at ClientRequest.emit (node:events:508:28)
+46 error     at emitErrorEvent (node:_http_client:108:11)
+46 error     at _destroy (node:_http_client:962:9)
+46 error     at onSocketNT (node:_http_client:982:5)
+46 error     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+46 error   code: 'EACCES',
+46 error   errno: 'EACCES',
+46 error   type: 'system',
+46 error   requiredBy: '.'
+46 error }
+47 error
+47 error The operation was rejected by your operating system.
+47 error It's possible that the file was already in use (by a text editor or antivirus),
+47 error or that you lack permissions to access it.
+47 error
+47 error If you believe this might be a permissions issue, please double-check the
+47 error permissions of the file and its containing directories, or try running
+47 error the command again as root/Administrator.
+48 silly unfinished npm timer reify 1772973629183
+49 silly unfinished npm timer reify:loadTrees 1772973629186
+50 verbose cwd C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM
+51 verbose os Windows_NT 10.0.19045
+52 verbose node v24.12.0
+53 verbose npm  v11.11.0
+54 verbose exit 1
+55 verbose code 1
+56 error A complete log of this run can be found in: C:\Users\pbrya\OneDrive\Documents\GitHub\GRADES-AND-ASSESSMENT-MANAGEMENT-SYSTEM\.npm-cache\_logs\2026-03-08T12_40_28_229Z-debug-0.log

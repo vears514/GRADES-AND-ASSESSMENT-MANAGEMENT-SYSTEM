@@ -144,17 +144,15 @@ export default function FacultyGradesPage() {
     if (!courseId) return
     setLoading(true)
     try {
-      const [courseGrades, enrollments] = await Promise.all([
-        gradeService.getGradesByCourse(courseId),
-        gradeService.getEnrollmentsByCourse(courseId),
+      const courseMeta = courses.find(c => c.id === courseId)
+      const aliases = courseMeta
+        ? [courseMeta.code, courseMeta.code.replace(/\s+/g, '')].filter(Boolean)
+        : []
+
+      const [courseGrades, roster] = await Promise.all([
+        gradeService.getGradesByCourse(courseId, aliases),
+        authService.getStudentsByEnrolledCourse(courseId),
       ])
-
-      const studentIds = enrollments.map((enr: any) => enr.studentId).filter(Boolean)
-      let roster: User[] = []
-
-      if (studentIds.length > 0) {
-        roster = await authService.getUsersByStudentIds(studentIds)
-      }
 
       setGrades(courseGrades)
       setStudents(roster)
@@ -181,7 +179,7 @@ export default function FacultyGradesPage() {
     } finally {
       setLoading(false)
     }
-  }, [refreshAuditFeed])
+  }, [refreshAuditFeed, courses])
 
   useEffect(() => {
     if (selectedCourseId) {

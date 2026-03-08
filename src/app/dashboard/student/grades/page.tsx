@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
 import { useRequireRole } from '@/hooks/useRequireRole'
@@ -40,6 +40,7 @@ export default function StudentSemestralGradesPage() {
   const [semestersData, setSemestersData] = useState<Semester[]>([])
   const [selectedSemId, setSelectedSemId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [gradeRecords, setGradeRecords] = useState<Grade[]>([])
 
   useEffect(() => {
     let active = true
@@ -69,6 +70,7 @@ export default function StudentSemestralGradesPage() {
           gradeService.getEnrollmentsByStudent(primaryStudentId, fallbackStudentIds),
           gradeService.getGradesByStudent(primaryStudentId, fallbackStudentIds)
         ])
+        setGradeRecords(grades)
 
         // Group courses by term (Year + Semester)
         const termMap = new Map<string, Semester>()
@@ -138,6 +140,23 @@ export default function StudentSemestralGradesPage() {
     return <div>Checking permissions…</div>
   }
 
+  const publishedGrades = gradeRecords
+    .map((g) => {
+      const score = typeof g.finalScore === 'number' ? g.finalScore : g.score
+      const conversion = convertNumericToGrade(score)
+      const updated = (g.updatedAt as any)?.toDate?.() || (g.updatedAt as Date) || null
+      return {
+        id: g.id,
+        courseId: g.courseId,
+        letter: conversion.letterGrade,
+        remarks: conversion.remarks,
+        status: g.status,
+        score,
+        updatedAt: updated,
+      }
+    })
+    .sort((a, b) => (b.updatedAt?.getTime?.() || 0) - (a.updatedAt?.getTime?.() || 0))
+
   const downloadPDF = async () => {
     if (!printRef.current) return
     if (!selectedSemId) {
@@ -188,6 +207,43 @@ export default function StudentSemestralGradesPage() {
 
       <div className="px-8 py-6 max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Semestral Grade</h1>
+
+        {publishedGrades.length > 0 && (
+          <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Latest Encoded Grades</p>
+                <p className="text-xs text-gray-500">Pulled directly from published grade records</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="px-6 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Course</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Score</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Letter</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Updated</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {publishedGrades.map((g) => (
+                    <tr key={g.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-3 text-sm font-medium text-gray-900">{g.courseId}</td>
+                      <td className="px-6 py-3 text-sm text-gray-700">{typeof g.score === 'number' ? g.score.toFixed(2) : '—'}</td>
+                      <td className="px-6 py-3 text-sm font-semibold text-gray-800">{g.letter}</td>
+                      <td className="px-6 py-3 text-sm text-gray-700 capitalize">{g.status || '—'}</td>
+                      <td className="px-6 py-3 text-sm text-gray-500">
+                        {g.updatedAt ? g.updatedAt.toLocaleString() : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-20 flex flex-col items-center justify-center">
@@ -418,3 +474,4 @@ export default function StudentSemestralGradesPage() {
     </div>
   )
 }
+

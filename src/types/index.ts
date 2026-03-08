@@ -59,6 +59,9 @@ export interface Grade {
   courseId: string
   studentId: string
   score: number
+  shortQuizScore?: number
+  longQuizScore?: number
+  majorExamScore?: number
   quizScore?: number
   examScore?: number
   finalScore?: number

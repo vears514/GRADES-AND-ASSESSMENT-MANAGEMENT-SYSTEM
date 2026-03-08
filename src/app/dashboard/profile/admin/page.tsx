@@ -120,7 +120,6 @@ export default function AdminProfilePage() {
         <h2 className="text-xl font-semibold mb-2">Admin Controls</h2>
         <div className="flex gap-4">
           <a href="/dashboard/admin/users" className="button-secondary">User Management</a>
-          <a href="/dashboard/admin/settings" className="button-secondary">System Settings</a>
         </div>
       </section>
 

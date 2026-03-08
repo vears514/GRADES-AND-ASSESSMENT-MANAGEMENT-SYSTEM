@@ -329,20 +329,20 @@ export const authService = {
     }
 
     const { auth } = getServices()
-    console.log('🎭 Demo login with:', demoAccount.email)
+    console.log('Demo login with:', demoAccount.email)
 
     try {
       const { user } = await signInWithEmailAndPassword(auth, demoAccount.email, demoAccount.password)
-      console.log('✅ Demo login successful:', user.email)
+      console.log('Demo login successful:', user.email)
       return user
     } catch (error: any) {
-      console.error('🎭 Demo login error code:', error.code)
+      console.error('Demo login error code:', error.code)
 
       // If demo account doesn't exist, provide helpful error
       // Note: Firebase returns auth/invalid-credential for both user-not-found and wrong-password for security
       const errCode = error.code || ''
       if (errCode === 'auth/user-not-found' || errCode === 'auth/invalid-credential' || error.message?.includes('invalid-credential')) {
-        console.warn('⚠️ Demo account not found in Firebase')
+        console.warn('Demo account not found in Firebase')
         console.warn('Email:', demoAccount.email)
         console.warn('This means the demo accounts haven\'t been created yet.')
         console.warn('\nTo fix this, run: node setup-demo-accounts.js')

@@ -54,7 +54,7 @@ export default function Home() {
               </Link>
               <a href="#features" className="group px-8 py-4 text-lg font-semibold border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-all flex items-center gap-2">
                 <span>Explore Features</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <span className="group-hover:translate-x-1 transition-transform">&gt;</span>
               </a>
             </div>
 
@@ -104,9 +104,9 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Grade Encoding</h3>
               <p className="text-gray-600 mb-4">Enter grades individually or in bulk with validation, draft saving, and auto-grading calculations.</p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Single & batch entry</li>
-                <li>✓ Auto calculations</li>
-                <li>✓ Draft management</li>
+                <li>Single & batch entry</li>
+                <li>Auto calculations</li>
+                <li>Draft management</li>
               </ul>
             </div>
 
@@ -116,9 +116,9 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Verification & Approval</h3>
               <p className="text-gray-600 mb-4">Multi-level approval workflow with comprehensive audit trails and quality checks for compliance.</p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Multi-level review</li>
-                <li>✓ Batch approval</li>
-                <li>✓ Audit logging</li>
+                <li>Multi-level review</li>
+                <li>Batch approval</li>
+                <li>Audit logging</li>
               </ul>
             </div>
 
@@ -128,9 +128,9 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Student Portal</h3>
               <p className="text-gray-600 mb-4">Students view grades, calculate GPA, generate transcripts, and track academic progress.</p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Grade transcript</li>
-                <li>✓ GPA calculation</li>
-                <li>✓ Progress tracking</li>
+                <li>Grade transcript</li>
+                <li>GPA calculation</li>
+                <li>Progress tracking</li>
               </ul>
             </div>
 
@@ -140,9 +140,9 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Grade Corrections</h3>
               <p className="text-gray-600 mb-4">Request and manage grade changes with proper documentation and approval workflows.</p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Request forms</li>
-                <li>✓ Change history</li>
-                <li>✓ Documentation</li>
+                <li>Request forms</li>
+                <li>Change history</li>
+                <li>Documentation</li>
               </ul>
             </div>
 
@@ -152,9 +152,9 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Reports & Analytics</h3>
               <p className="text-gray-600 mb-4">Generate comprehensive reports with analytics, visualizations, and export to PDF/Excel.</p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Grade reports</li>
-                <li>✓ Analytics</li>
-                <li>✓ PDF/Excel export</li>
+                <li>Grade reports</li>
+                <li>Analytics</li>
+                <li>PDF/Excel export</li>
               </ul>
             </div>
 
@@ -164,9 +164,9 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Security & Compliance</h3>
               <p className="text-gray-600 mb-4">Enterprise-grade security with role-based access, encryption, and comprehensive audit logs.</p>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>✓ Role-based access</li>
-                <li>✓ Data encryption</li>
-                <li>✓ Audit trails</li>
+                <li>Role-based access</li>
+                <li>Data encryption</li>
+                <li>Audit trails</li>
               </ul>
             </div>
           </div>
@@ -187,23 +187,23 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Faculty</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-blue-600 font-bold">-</span>
                   <span>Enter grades individually</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-blue-600 font-bold">-</span>
                   <span>Bulk upload grades</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-blue-600 font-bold">-</span>
                   <span>Save as draft</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-blue-600 font-bold">-</span>
                   <span>Request corrections</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-blue-600 font-bold">-</span>
                   <span>Track submissions</span>
                 </li>
               </ul>
@@ -214,23 +214,23 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Registrar</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-3">
-                  <span className="text-teal-600 font-bold">✓</span>
+                  <span className="text-teal-600 font-bold">-</span>
                   <span>Verify grades</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-teal-600 font-bold">✓</span>
+                  <span className="text-teal-600 font-bold">-</span>
                   <span>Batch approvals</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-teal-600 font-bold">✓</span>
+                  <span className="text-teal-600 font-bold">-</span>
                   <span>Quality checks</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-teal-600 font-bold">✓</span>
+                  <span className="text-teal-600 font-bold">-</span>
                   <span>Generate reports</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-teal-600 font-bold">✓</span>
+                  <span className="text-teal-600 font-bold">-</span>
                   <span>View audit logs</span>
                 </li>
               </ul>
@@ -241,23 +241,23 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Student</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-3">
-                  <span className="text-purple-600 font-bold">✓</span>
+                  <span className="text-purple-600 font-bold">-</span>
                   <span>View grades</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-purple-600 font-bold">✓</span>
+                  <span className="text-purple-600 font-bold">-</span>
                   <span>Calculate GPA</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-purple-600 font-bold">✓</span>
+                  <span className="text-purple-600 font-bold">-</span>
                   <span>Download transcript</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-purple-600 font-bold">✓</span>
+                  <span className="text-purple-600 font-bold">-</span>
                   <span>Track progress</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-purple-600 font-bold">✓</span>
+                  <span className="text-purple-600 font-bold">-</span>
                   <span>View analytics</span>
                 </li>
               </ul>
@@ -268,23 +268,23 @@ export default function Home() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Admin</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-3">
-                  <span className="text-gray-700 font-bold">✓</span>
+                  <span className="text-gray-700 font-bold">-</span>
                   <span>Manage users</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-gray-700 font-bold">✓</span>
+                  <span className="text-gray-700 font-bold">-</span>
                   <span>Configure courses</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-gray-700 font-bold">✓</span>
+                  <span className="text-gray-700 font-bold">-</span>
                   <span>System reports</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-gray-700 font-bold">✓</span>
+                  <span className="text-gray-700 font-bold">-</span>
                   <span>Settings</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-gray-700 font-bold">✓</span>
+                  <span className="text-gray-700 font-bold">-</span>
                   <span>System logs</span>
                 </li>
               </ul>
@@ -425,19 +425,19 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center p-8 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="text-5xl mb-4">🎓</div>
+              <div className="mb-4 text-2xl font-bold text-blue-600">CN</div>
               <p className="font-semibold text-gray-900">Canvas</p>
             </div>
             <div className="text-center p-8 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="text-5xl mb-4">📚</div>
+              <div className="mb-4 text-2xl font-bold text-blue-600">BB</div>
               <p className="font-semibold text-gray-900">Blackboard</p>
             </div>
             <div className="text-center p-8 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="text-5xl mb-4">🔧</div>
+              <div className="mb-4 text-2xl font-bold text-blue-600">MD</div>
               <p className="font-semibold text-gray-900">Moodle</p>
             </div>
             <div className="text-center p-8 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="text-5xl mb-4">💼</div>
+              <div className="mb-4 text-2xl font-bold text-blue-600">EL</div>
               <p className="font-semibold text-gray-900">Ellucian</p>
             </div>
           </div>
@@ -465,7 +465,7 @@ export default function Home() {
             <details className="bg-gray-50 rounded-lg p-6 border border-gray-200 cursor-pointer group">
               <summary className="flex items-center justify-between font-semibold text-gray-900 text-lg hover:text-blue-600 transition-colors">
                 <span>How secure is the grade data?</span>
-                <span className="text-2xl group-open:rotate-180 transition-transform">›</span>
+                <span className="text-2xl group-open:rotate-180 transition-transform">&gt;</span>
               </summary>
               <p className="text-gray-600 mt-4">
                 We use industry-standard encryption (AES-256) for all data at rest and TLS 1.3 for data in transit. 
@@ -477,7 +477,7 @@ export default function Home() {
             <details className="bg-gray-50 rounded-lg p-6 border border-gray-200 cursor-pointer group">
               <summary className="flex items-center justify-between font-semibold text-gray-900 text-lg hover:text-blue-600 transition-colors">
                 <span>Can we integrate GradeHub with our existing systems?</span>
-                <span className="text-2xl group-open:rotate-180 transition-transform">›</span>
+                <span className="text-2xl group-open:rotate-180 transition-transform">&gt;</span>
               </summary>
               <p className="text-gray-600 mt-4">
                 Yes! GradeHub provides a comprehensive API and supports integration with popular systems. 
@@ -489,7 +489,7 @@ export default function Home() {
             <details className="bg-gray-50 rounded-lg p-6 border border-gray-200 cursor-pointer group">
               <summary className="flex items-center justify-between font-semibold text-gray-900 text-lg hover:text-blue-600 transition-colors">
                 <span>What if we need to migrate our existing data?</span>
-                <span className="text-2xl group-open:rotate-180 transition-transform">›</span>
+                <span className="text-2xl group-open:rotate-180 transition-transform">&gt;</span>
               </summary>
               <p className="text-gray-600 mt-4">
                 We provide free data migration services for all plans. Our technical team will help you safely transfer your existing grade data 
@@ -501,7 +501,7 @@ export default function Home() {
             <details className="bg-gray-50 rounded-lg p-6 border border-gray-200 cursor-pointer group">
               <summary className="flex items-center justify-between font-semibold text-gray-900 text-lg hover:text-blue-600 transition-colors">
                 <span>Is there training and support available?</span>
-                <span className="text-2xl group-open:rotate-180 transition-transform">›</span>
+                <span className="text-2xl group-open:rotate-180 transition-transform">&gt;</span>
               </summary>
               <p className="text-gray-600 mt-4">
                 Absolutely! We provide comprehensive onboarding, video tutorials, documentation, and live support. 
@@ -513,7 +513,7 @@ export default function Home() {
             <details className="bg-gray-50 rounded-lg p-6 border border-gray-200 cursor-pointer group">
               <summary className="flex items-center justify-between font-semibold text-gray-900 text-lg hover:text-blue-600 transition-colors">
                 <span>Can we customize the workflows for our institution?</span>
-                <span className="text-2xl group-open:rotate-180 transition-transform">›</span>
+                <span className="text-2xl group-open:rotate-180 transition-transform">&gt;</span>
               </summary>
               <p className="text-gray-600 mt-4">
                 Yes, GradeHub is highly customizable. You can configure approval workflows, permission rules, reporting formats, and more. 

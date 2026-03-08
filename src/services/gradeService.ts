@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore'
 import { getDb } from '@/lib/firebase'
 import { Grade } from '@/types'
+import { isDevCourseRecord, isDevEnrollmentRecord, isDevGradeRecord } from '@/lib/devData'
 
 const GRADES_COLLECTION = 'grades'
 
@@ -20,10 +21,46 @@ const getDatabase = () => {
   return db
 }
 
+const getTimeValue = (value: unknown) => {
+  if (typeof (value as { toMillis?: () => number })?.toMillis === 'function') {
+    return (value as { toMillis: () => number }).toMillis()
+  }
+
+  if (typeof (value as { toDate?: () => Date })?.toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate().getTime()
+  }
+
+  if (value instanceof Date) {
+    return value.getTime()
+  }
+
+  return 0
+}
+
 const stripUndefined = <T extends Record<string, any>>(data: T): Partial<T> => {
   return Object.fromEntries(
     Object.entries(data).filter(([, value]) => value !== undefined)
   ) as Partial<T>
+}
+
+const sortByUpdatedAtDesc = <T extends { updatedAt?: unknown }>(records: T[]) => {
+  return records.sort((a, b) => {
+    const timeA = getTimeValue(a.updatedAt)
+    const timeB = getTimeValue(b.updatedAt)
+    return timeB - timeA
+  })
+}
+
+const filterLiveGrades = (grades: Grade[]) => {
+  return grades.filter((grade) => !isDevGradeRecord(grade))
+}
+
+const filterLiveEnrollments = <T extends Record<string, any>>(enrollments: T[]) => {
+  return enrollments.filter((enrollment) => !isDevEnrollmentRecord(enrollment))
+}
+
+const filterLiveCourses = <T extends Record<string, any>>(courses: T[]) => {
+  return courses.filter((course) => !isDevCourseRecord(course))
 }
 
 export const gradeService = {
@@ -67,12 +104,7 @@ export const gradeService = {
       })
     }
 
-    return Array.from(gradeMap.values())
-      .sort((a, b) => {
-        const timeA = (a.updatedAt as any)?.toMillis?.() || 0
-        const timeB = (b.updatedAt as any)?.toMillis?.() || 0
-        return timeB - timeA
-      })
+    return sortByUpdatedAtDesc(filterLiveGrades(Array.from(gradeMap.values())))
   },
 
   // Get grades for a student
@@ -97,33 +129,32 @@ export const gradeService = {
       })
     }
 
-    return Array.from(gradeMap.values())
-      .sort((a, b) => {
-        const timeA = (a.updatedAt as any)?.toMillis?.() || 0
-        const timeB = (b.updatedAt as any)?.toMillis?.() || 0
-        return timeB - timeA
-      })
+    return sortByUpdatedAtDesc(filterLiveGrades(Array.from(gradeMap.values())))
   },
 
   // Get pending grades for verification
   async getPendingGrades(limit = 50): Promise<Grade[]> {
+    const grades = await this.getGradesByStatuses(['submitted'])
+    return grades.slice(0, limit)
+  },
+
+  async getGradesByStatuses(statuses: Grade['status'][]): Promise<Grade[]> {
+    if (statuses.length === 0) {
+      return []
+    }
+
     const db = getDatabase()
     const q = query(
       collection(db, GRADES_COLLECTION),
-      where('status', '==', 'submitted')
+      where('status', 'in', statuses.slice(0, 10))
     )
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Grade))
-      .sort((a, b) => {
-        const timeA = (a.updatedAt as any)?.toMillis?.() || 0
-        const timeB = (b.updatedAt as any)?.toMillis?.() || 0
-        return timeB - timeA
-      })
-      .slice(0, limit)
+    const grades = querySnapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+    } as Grade))
+
+    return sortByUpdatedAtDesc(filterLiveGrades(grades))
   },
 
   // Update grade status
@@ -184,10 +215,10 @@ export const gradeService = {
       where('courseId', '==', courseId)
     )
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => ({
+    return filterLiveEnrollments(querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }))
+    })))
   },
 
   // Get enrollments for a student
@@ -212,7 +243,7 @@ export const gradeService = {
       })
     }
 
-    return Array.from(enrollmentMap.values())
+    return filterLiveEnrollments(Array.from(enrollmentMap.values()))
   },
 
   // Get course by ID
@@ -221,12 +252,18 @@ export const gradeService = {
     // Try both field 'id' and document ID (standard in Firestore)
     const q1 = query(collection(db, 'courses'), where('id', '==', courseId))
     const snap1 = await getDocs(q1)
-    if (!snap1.empty) return { id: snap1.docs[0].id, ...snap1.docs[0].data() }
+    if (!snap1.empty) {
+      const course = { id: snap1.docs[0].id, ...snap1.docs[0].data() }
+      return isDevCourseRecord(course) ? null : course
+    }
 
     // Standard document ID lookup
     const q2 = query(collection(db, 'courses'), where('__name__', '==', courseId))
     const snap2 = await getDocs(q2)
-    if (!snap2.empty) return { id: snap2.docs[0].id, ...snap2.docs[0].data() }
+    if (!snap2.empty) {
+      const course = { id: snap2.docs[0].id, ...snap2.docs[0].data() }
+      return isDevCourseRecord(course) ? null : course
+    }
 
     return null
   },
@@ -267,17 +304,17 @@ export const gradeService = {
       }
     }
 
-    return Array.from(courseMap.values())
+    return filterLiveCourses(Array.from(courseMap.values()))
   },
 
   // Get all courses (used by admin views)
   async getAllCourses(): Promise<any[]> {
     const db = getDatabase()
     const querySnapshot = await getDocs(collection(db, 'courses'))
-    return querySnapshot.docs.map(doc => ({
+    return filterLiveCourses(querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }))
+    })))
   },
 
   // Upsert grade
@@ -294,13 +331,13 @@ export const gradeService = {
 
   // Publish grade (sets status to approved and stamps publishedAt/by)
   async publishGrade(gradeData: Partial<Grade> & { submittedBy?: string }): Promise<Grade> {
-    const payload: Partial<Grade> = {
+    const payload = {
       ...gradeData,
-      status: 'approved',
-      publishedAt: Timestamp.now(),
+      status: 'approved' as const,
+      publishedAt: new Date(),
       publishedBy: gradeData.submittedBy || gradeData.verifiedBy || gradeData.submittedBy,
-      submittedAt: gradeData.submittedAt || Timestamp.now(),
-      updatedAt: Timestamp.now(),
+      submittedAt: gradeData.submittedAt || new Date(),
+      updatedAt: new Date(),
     }
     return await this.upsertGrade(payload)
   }

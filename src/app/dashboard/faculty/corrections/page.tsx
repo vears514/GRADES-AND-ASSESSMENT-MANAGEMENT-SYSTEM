@@ -335,10 +335,10 @@ export default function CorrectionRequestPage() {
 
             <div className="mt-4 flex gap-2 text-xs text-gray-600">
               {request.submittedDate && (
-                <span>📅 Submitted: {request.submittedDate}</span>
+                <span>Submitted: {request.submittedDate}</span>
               )}
               {request.reviewedDate && (
-                <span>✓ Reviewed: {request.reviewedDate}</span>
+                <span>Reviewed: {request.reviewedDate}</span>
               )}
             </div>
           </div>

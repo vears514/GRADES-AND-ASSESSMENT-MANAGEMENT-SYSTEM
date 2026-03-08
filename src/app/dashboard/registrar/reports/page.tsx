@@ -179,7 +179,7 @@ export default function ReportsPage() {
             Preview
           </button>
           <button className="button-secondary">
-            📥 Download Template
+            Download Template
           </button>
         </div>
       </div>
@@ -199,13 +199,13 @@ export default function ReportsPage() {
                 {report.status === 'available' && (
                   <>
                     <button className="button-secondary text-sm">
-                      👁️ View
+                      View
                     </button>
                     <button className="button-secondary text-sm">
-                      📥 Download
+                      Download
                     </button>
                     <button className="button-secondary text-sm">
-                      📧 Email
+                      Email
                     </button>
                   </>
                 )}
@@ -303,16 +303,16 @@ export default function ReportsPage() {
       {/* Quick Action Buttons */}
       <div className="mt-8 flex gap-2 flex-wrap">
         <button className="button-primary">
-          📊 Export as PDF
+          Export as PDF
         </button>
         <button className="button-secondary">
-          📊 Export as Excel
+          Export as Excel
         </button>
         <button className="button-secondary">
-          🔄 Refresh Data
+          Refresh Data
         </button>
         <button className="button-secondary">
-          📧 Email Report
+          Email Report
         </button>
       </div>
     </div>

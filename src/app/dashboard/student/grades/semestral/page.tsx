@@ -32,6 +32,16 @@ interface Semester {
   semKey: string
 }
 
+interface LatestGradeSummary {
+  id: string
+  courseCode: string
+  courseName: string
+  letter: string
+  status: string
+  score: number
+  updatedAt: Date | null
+}
+
 export default function StudentSemestralGradesPage() {
   const allowed = useRequireRole(['student', 'admin'])
 
@@ -40,7 +50,7 @@ export default function StudentSemestralGradesPage() {
   const [semestersData, setSemestersData] = useState<Semester[]>([])
   const [selectedSemId, setSelectedSemId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [gradeRecords, setGradeRecords] = useState<Grade[]>([])
+  const [latestGrades, setLatestGrades] = useState<LatestGradeSummary[]>([])
 
   useEffect(() => {
     let active = true
@@ -68,16 +78,21 @@ export default function StudentSemestralGradesPage() {
           gradeService.getEnrollmentsByStudent(primaryStudentId, fallbackStudentIds),
           gradeService.getGradesByStudent(primaryStudentId, fallbackStudentIds),
         ])
-        setGradeRecords(grades)
 
         const termMap = new Map<string, Semester>()
+        const approvedGradeSummaries: LatestGradeSummary[] = []
 
         for (const enrollment of enrollments) {
           const courseData = await gradeService.getCourseById(enrollment.courseId)
           if (!courseData) continue
 
           const gradeRecord = grades.find((g: Grade) => g.courseId === enrollment.courseId)
+          if (!gradeRecord || gradeRecord.status !== 'approved') {
+            continue
+          }
+
           const conversion = gradeRecord ? convertNumericToGrade(gradeRecord.score) : null
+          const updated = (gradeRecord.updatedAt as any)?.toDate?.() || (gradeRecord.updatedAt as Date) || null
 
           const internalCourse: Course = {
             id: enrollment.id,
@@ -90,6 +105,16 @@ export default function StudentSemestralGradesPage() {
             remarks: conversion?.remarks || (gradeRecord ? 'Pending' : 'Enrolled'),
             status: gradeRecord?.status === 'approved' ? 'published' : 'pending',
           }
+
+          approvedGradeSummaries.push({
+            id: gradeRecord.id,
+            courseCode: courseData.code,
+            courseName: courseData.name,
+            letter: conversion?.letterGrade || 'N/A',
+            status: gradeRecord.status,
+            score: typeof gradeRecord.finalScore === 'number' ? gradeRecord.finalScore : gradeRecord.score,
+            updatedAt: updated,
+          })
 
           const termKey = `${courseData.year}-${courseData.semester}`
           if (!termMap.has(termKey)) {
@@ -113,6 +138,9 @@ export default function StudentSemestralGradesPage() {
 
         if (!active) return
         setSemestersData(finalData)
+        setLatestGrades(
+          approvedGradeSummaries.sort((a, b) => (b.updatedAt?.getTime?.() || 0) - (a.updatedAt?.getTime?.() || 0))
+        )
 
         if (finalData.length > 0) {
           setSelectedSemId(finalData[0].id)
@@ -135,23 +163,6 @@ export default function StudentSemestralGradesPage() {
   if (allowed === null) {
     return <div>Checking permissions...</div>
   }
-
-  const publishedGrades = gradeRecords
-    .map((g) => {
-      const score = typeof g.finalScore === 'number' ? g.finalScore : g.score
-      const conversion = convertNumericToGrade(score)
-      const updated = (g.updatedAt as any)?.toDate?.() || (g.updatedAt as Date) || null
-      return {
-        id: g.id,
-        courseId: g.courseId,
-        letter: conversion.letterGrade,
-        remarks: conversion.remarks,
-        status: g.status,
-        score,
-        updatedAt: updated,
-      }
-    })
-    .sort((a, b) => (b.updatedAt?.getTime?.() || 0) - (a.updatedAt?.getTime?.() || 0))
 
   const downloadPDF = async () => {
     if (!printRef.current) return
@@ -203,7 +214,7 @@ export default function StudentSemestralGradesPage() {
       <div className="mx-auto max-w-7xl px-8 py-6">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">Semestral Grade</h1>
 
-        {publishedGrades.length > 0 && (
+        {latestGrades.length > 0 && (
           <div className="mb-6 overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div>
@@ -223,9 +234,12 @@ export default function StudentSemestralGradesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {publishedGrades.map((g) => (
+                  {latestGrades.map((g) => (
                     <tr key={g.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-3 text-sm font-medium text-gray-900">{g.courseId}</td>
+                      <td className="px-6 py-3 text-sm font-medium text-gray-900">
+                        <div>{g.courseCode}</div>
+                        <div className="text-xs font-normal text-gray-500">{g.courseName}</div>
+                      </td>
                       <td className="px-6 py-3 text-sm text-gray-700">{typeof g.score === 'number' ? g.score.toFixed(2) : '-'}</td>
                       <td className="px-6 py-3 text-sm font-semibold text-gray-800">{g.letter}</td>
                       <td className="px-6 py-3 text-sm capitalize text-gray-700">{g.status || '-'}</td>

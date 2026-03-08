@@ -136,7 +136,7 @@ export default function LoginPage() {
 
           {success && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-start gap-3">
-              <span className="text-lg">✓</span>
+              <span className="text-lg font-semibold">OK</span>
               <div>{success}</div>
             </div>
           )}
@@ -164,7 +164,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
+                  placeholder="********"
                   disabled={loading}
                 />
                 <button
@@ -194,7 +194,7 @@ export default function LoginPage() {
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⏳</span>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                   Signing in...
                 </span>
               ) : (

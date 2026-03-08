@@ -175,7 +175,7 @@ export default function RegisterPage() {
 
           {success && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-start gap-3">
-              <span className="text-lg">✓</span>
+              <span className="text-lg font-semibold">OK</span>
               <div>{success}</div>
             </div>
           )}
@@ -269,7 +269,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   disabled={loading}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
+                  placeholder="********"
                   minLength={8}
                 />
                 <button
@@ -298,7 +298,7 @@ export default function RegisterPage() {
                   </span>
                 </div>
               )}
-              <p className="text-xs text-gray-600 mt-2">• At least 8 characters • Mix uppercase, numbers (optional but recommended)</p>
+              <p className="text-xs text-gray-600 mt-2">At least 8 characters. Mixing uppercase letters and numbers is recommended.</p>
             </div>
 
             <div>
@@ -312,7 +312,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   disabled={loading}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
+                  placeholder="********"
                   minLength={8}
                 />
                 <button
@@ -325,7 +325,7 @@ export default function RegisterPage() {
               </div>
               {formData.confirmPassword && (
                 <p className={`text-xs mt-2 ${formData.password === formData.confirmPassword ? 'text-green-600' : 'text-red-600'}`}>
-                  {formData.password === formData.confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
+                  {formData.password === formData.confirmPassword ? 'Passwords match' : 'Passwords do not match'}
                 </p>
               )}
             </div>
@@ -337,7 +337,7 @@ export default function RegisterPage() {
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⏳</span>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                   Creating account...
                 </span>
               ) : (
@@ -380,9 +380,9 @@ export default function RegisterPage() {
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-xs font-semibold text-gray-600 mb-3">Security Features:</p>
             <ul className="space-y-1 text-xs text-gray-600">
-              <li>✓ Password encryption</li>
-              <li>✓ Email verification</li>
-              <li>✓ Firebase authentication</li>
+              <li>Password encryption</li>
+              <li>Email verification</li>
+              <li>Firebase authentication</li>
             </ul>
           </div>
         </div>

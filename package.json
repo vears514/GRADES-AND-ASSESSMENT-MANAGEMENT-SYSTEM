@@ -5,11 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "prebuild": "tsc --noEmit --incremental false",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental false",
     "firebase:login": "firebase login",
     "firebase:init": "firebase init",
     "firebase:emulate": "firebase emulators:start --only firestore,auth",

@@ -223,11 +223,11 @@ export default function FacultyGradesPage() {
     }))
   }
 
-  const publishGradeMutation = useCallback(async (payload: Partial<Grade>) => {
-    return gradeService.publishGrade(payload)
+  const saveDraftMutation = useCallback(async (payload: Partial<Grade>) => {
+    return gradeService.upsertGrade(payload)
   }, [])
 
-  const handleSaveAndPublish = async (student: User) => {
+  const handleSaveDraft = async (student: User) => {
     if (!selectedCourseId) return
     const scores = getScoreInputs(student)
     const finalScore = computeFinalGrade(scores)
@@ -253,7 +253,7 @@ export default function FacultyGradesPage() {
 
     setSubmitting(true)
     try {
-      await publishGradeMutation({
+      await saveDraftMutation({
         id: gradeRecord?.id,
         courseId: selectedCourseId,
         studentId: gradeRecord?.studentId || student.studentId || student.id,
@@ -264,21 +264,22 @@ export default function FacultyGradesPage() {
         longQuizScore: scores.longQuiz,
         letterGrade: conversion.letterGrade,
         remarks: conversion.remarks,
-        status: 'approved',
+        status: 'draft',
         submittedBy: authUser?.uid || 'unknown',
         updatedAt: new Date(),
       })
 
       await auditService.record({
-        action: 'PUBLISH_GRADE',
+        action: 'SAVE_GRADE_DRAFT',
         entityType: 'course',
         entityId: selectedCourseId,
         userId: authUser?.uid || 'unknown',
-        description: `${professorName} published grades for ${course?.code || 'selected course'}`,
+        description: `${professorName} saved grade drafts for ${course?.code || 'selected course'}`,
         changes: {
           studentId: student.studentId || student.id,
           finalScore,
           letterGrade: conversion.letterGrade,
+          status: 'draft',
         },
       })
 
@@ -291,8 +292,8 @@ export default function FacultyGradesPage() {
         setAuditFeed(updatedLogs)
       }
     } catch (error: any) {
-      console.error('Error publishing grade:', error)
-      alert('Failed to save/publish. Please try again.')
+      console.error('Error saving grade draft:', error)
+      alert('Failed to save draft. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -308,6 +309,18 @@ export default function FacultyGradesPage() {
       await Promise.all(draftGrades.map(g =>
         gradeService.updateGrade(g.id, { status: 'submitted', submittedAt: new Date() })
       ))
+
+      await auditService.record({
+        action: 'SUBMIT_GRADES_FOR_VERIFICATION',
+        entityType: 'course',
+        entityId: selectedCourseId,
+        userId: authService.getCurrentUser()?.uid || 'unknown',
+        description: `Submitted ${draftGrades.length} draft grade record(s) for verification.`,
+        changes: {
+          submittedCount: draftGrades.length,
+          status: 'submitted',
+        },
+      })
 
       const updatedGrades = await gradeService.getGradesByCourse(selectedCourseId)
       setGrades(updatedGrades)
@@ -349,7 +362,7 @@ export default function FacultyGradesPage() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Grade Entry</h1>
-          <p className="text-gray-600 mt-1">Encode and publish grades with automated computation.</p>
+          <p className="text-gray-600 mt-1">Encode grades, save drafts, and submit them for registrar verification.</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -357,7 +370,7 @@ export default function FacultyGradesPage() {
             disabled={submitting || grades.filter(g => g.status === 'draft').length === 0}
             className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-md"
           >
-            Submit All Drafts
+            Submit All for Verification
           </button>
         </div>
       </div>
@@ -530,11 +543,11 @@ export default function FacultyGradesPage() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <button
-                              onClick={() => handleSaveAndPublish(student)}
+                              onClick={() => handleSaveDraft(student)}
                               disabled={submitting}
                               className="px-4 py-2 text-sm font-semibold bg-[#1E3A5F] text-white rounded-lg hover:bg-[#2D5986] disabled:opacity-60"
                             >
-                              Save / Publish
+                              Save Draft
                             </button>
                           </td>
                         </tr>
